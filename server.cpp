@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#define BUF_SIZE 100
 
 int main(){
     //创建套接字
@@ -25,10 +26,14 @@ int main(){
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_size = sizeof(clnt_addr);
     int clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+    
+    //接收客户端发来的数据
+    char buffer[BUF_SIZE] = {0};
+    read(clnt_sock, buffer, sizeof(buffer)-1);
+    printf("Message form client: %s\n", buffer);
 
     //向客户端发送数据
-    char str[] = "Hello World!!!!!!!";
-    write(clnt_sock, str, sizeof(str));
+    write(clnt_sock, buffer, sizeof(buffer));
    
     //关闭套接字
     close(clnt_sock);

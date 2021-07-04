@@ -4,6 +4,8 @@
     #include <unistd.h>
     #include <arpa/inet.h>
     #include <sys/socket.h>
+    #define BUF_SIZE 100
+
     int main(){
         //创建套接字
         int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -14,11 +16,15 @@
         serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址
         serv_addr.sin_port = htons(1234);  //端口
         connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-       
+
+        // 获取用户输入的字符串并发送给服务器
+        char buffer[BUF_SIZE] = {0};
+        printf("Input a string: ");
+        scanf("%s", buffer);
+        write(sock, buffer, sizeof(buffer));
+
         //读取服务器传回的数据
-        char buffer[40];
         read(sock, buffer, sizeof(buffer)-1);
-       
         printf("Message form server: %s\n", buffer);
        
         //关闭套接字
