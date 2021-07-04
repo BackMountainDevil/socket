@@ -19,3 +19,10 @@ std::cin.getline(buffer, BUF_SIZE); // C++
 
 - [c语言gets()函数与它的替代者fgets()函数](https://www.cnblogs.com/qingergege/p/5925811.html)
 - [PAT B1009 error: ‘gets’ was not declared in this scope gets(s)之解决办法 一只小菜猪 2019-01-24](https://blog.csdn.net/qq_36525099/article/details/86631881)
+
+## 错误处理
+使用`git checkout basicError`签出对于版本的代码。
+- [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)
+- [inet_pton()和inet_ntop()函数详解. QvQ是惊喜不是哭泣 2017-02-28](https://blog.csdn.net/zyy617532750/article/details/58595700)
+- [C 库函数 - perror()](https://www.runoob.com/cprogramming/c-function-perror.html)
+- [C语言setsockopt()函数：设置socket状态](http://c.biancheng.net/cpp/html/374.html)
