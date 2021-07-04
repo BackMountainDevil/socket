@@ -4,6 +4,7 @@
     #include <unistd.h>
     #include <arpa/inet.h>
     #include <sys/socket.h>
+    #include <iostream>
     #define BUF_SIZE 100
 
     int main(){
@@ -20,7 +21,11 @@
         // 获取用户输入的字符串并发送给服务器
         char buffer[BUF_SIZE] = {0};
         printf("Input a string: ");
-        scanf("%s", buffer);
+        
+        // scanf("%s", buffer);
+        // fgets(buffer,BUF_SIZE,stdin);
+        std::cin.getline(buffer, BUF_SIZE);
+
         write(sock, buffer, sizeof(buffer));
 
         //读取服务器传回的数据

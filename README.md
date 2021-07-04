@@ -9,3 +9,13 @@
 ## 向服务端发送并接收数据
 使用`git checkout basic2`签出对于版本的代码。
 在上一步的基础上增加了向服务端发生自定义数据的功能，然后服务端也增加了接收数据的功能，接收之后再将数据返回给客户端。
+
+scanf() 读取到空格时认为输入结束，考虑下 fgets() 或者 std::cin.getline()。gets() 已经被抛弃，不建议使用。
+```bash
+scanf("%s", buffer);
+fgets(buffer,fgets(buffer,BUF_SIZE,stdin);,stdin);    //  C: fgets() 会读取换行符'\n'，除非缓存区不够大
+std::cin.getline(buffer, BUF_SIZE); // C++
+```
+
+- [c语言gets()函数与它的替代者fgets()函数](https://www.cnblogs.com/qingergege/p/5925811.html)
+- [PAT B1009 error: ‘gets’ was not declared in this scope gets(s)之解决办法 一只小菜猪 2019-01-24](https://blog.csdn.net/qq_36525099/article/details/86631881)
