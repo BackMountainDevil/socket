@@ -36,7 +36,7 @@ int main() {
   while (true) {
     printf("Input a string: "); // 获取用户输入
     std::cin.getline(bufSend, BUF_SIZE);
-    if (strcmp(bufSend, "exit") == 0) { // 输入 ‘exit’ 终止程序
+    if (!strcmp(bufSend, "exit")) { // 输入 ‘exit’ 终止程序
       break;
     }
     int send_num = sendto(sock_fd, bufSend, strlen(bufSend), 0,
