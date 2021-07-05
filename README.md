@@ -82,3 +82,10 @@ Message form server: asd
 
 - [socket文件传输功能的实现](http://c.biancheng.net/cpp/html/3045.html)
 - [段错误 (核心已转储) + free(): double free detected in tcache 2 已放弃 (核心已转储). Kearney form An idea 2021-07-05](https://blog.csdn.net/weixin_43031092/article/details/118487981)
+
+## [使用域名替代 IP 地址](./getIP.cpp)
+为什么要这么做？文章说的是一旦IP地址变化（IP地址会经常变动），客户端软件就会出现错误。而域名续费就不会变，而域名的 IP 解析可以随时修改。
+
+- [在socket中使用域名](http://c.biancheng.net/cpp/html/3048.html)
+- [gethostbyname()函数详解.带鱼兄 2016-07-18](https://blog.csdn.net/daiyudong2020/article/details/51946080?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522162546433016780261960009%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=162546433016780261960009&biz_id=0)
+> gethostname可能存在性能瓶颈问题
