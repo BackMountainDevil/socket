@@ -41,26 +41,30 @@ int main() {
     perror("Listen");
     exit(EXIT_FAILURE);
   }
-  int a = 100;
+
   //接收客户端请求
   struct sockaddr_in clnt_addr;
   socklen_t clnt_addr_size = sizeof(clnt_addr);
-  int clnt_sock =
-      accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-  if (clnt_sock < 0) {
-    perror("Accept");
-    exit(EXIT_FAILURE);
-  }
-  //接收客户端发来的数据
   char buffer[BUF_SIZE] = {0};
-  read(clnt_sock, buffer, sizeof(buffer) - 1);
-  printf("Message form client: %s\n", buffer);
+  while (true) {
+    int clnt_sock =
+        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+    if (clnt_sock < 0) {
+      perror("Accept");
+      exit(EXIT_FAILURE);
+    }
 
-  //向客户端发送数据
-  write(clnt_sock, buffer, sizeof(buffer));
+    //接收客户端发来的数据
+    read(clnt_sock, buffer, sizeof(buffer) - 1);
+    printf("Message form client: %s\n", buffer);
 
-  //关闭套接字
-  close(clnt_sock);
+    //向客户端发送数据
+    write(clnt_sock, buffer, sizeof(buffer));
+    //关闭套接字
+    close(clnt_sock);
+    memset(buffer, 0, BUF_SIZE); //重置缓冲区
+  }
+
   close(serv_sock);
 
   return 0;
