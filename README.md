@@ -76,3 +76,9 @@ Message form server: 123 456 789 asdxc asd
 Input a string: asd
 Message form server: asd
 ```
+
+## 文件传输
+使用`git checkout file`签出对应版本的代码。
+
+- [socket文件传输功能的实现](http://c.biancheng.net/cpp/html/3045.html)
+- [段错误 (核心已转储) + free(): double free detected in tcache 2 已放弃 (核心已转储). Kearney form An idea 2021-07-05](https://blog.csdn.net/weixin_43031092/article/details/118487981)

@@ -10,6 +10,12 @@
 #define PORT 8080
 
 int main() {
+  FILE *fp = fopen("msgFromServer.txt", "wb"); // 以二进制方式打开（创建）文件
+  if (fp == NULL) {
+    perror("Cannot open file");
+    exit(EXIT_FAILURE);
+  }
+
   struct sockaddr_in serv_addr;
   memset(&serv_addr, 0, sizeof(serv_addr)); //每个字节都用0填充
   serv_addr.sin_family = AF_INET;           //使用IPv4地址
@@ -23,33 +29,32 @@ int main() {
 
   char bufSend[BUF_SIZE] = {0};
   char bufRecv[BUF_SIZE] = {0};
-  while (true) {
-    // 创建套接字
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-      perror("Error: Socket creation failed");
-      exit(EXIT_FAILURE);
-    }
 
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      perror("Error: Connection creation failed");
-      exit(EXIT_FAILURE);
-    }
-    // 获取用户输入的字符串并发送给服务器
-    printf("Input a string: ");
-    std::cin.getline(bufSend, BUF_SIZE);
-    for (int i = 0; i < 20; i++) {
-      write(sock, bufSend, sizeof(bufSend));
-    }
-
-    //读取服务器传回的数据
-    read(sock, bufRecv, sizeof(bufRecv) - 1);
-    printf("Message form server: %s\n", bufRecv);
-
-    memset(bufSend, 0, BUF_SIZE); // 重置缓冲区
-    memset(bufRecv, 0, BUF_SIZE); // 重置缓冲区
-    close(sock);                  // 关闭套接字
+  // 创建套接字
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("Error: Socket creation failed");
+    exit(EXIT_FAILURE);
   }
+
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("Error: Connection creation failed");
+    exit(EXIT_FAILURE);
+  }
+
+  //循环接收数据，直到文件传输完毕
+  int nCount;
+  while ((nCount = recv(sock, bufRecv, BUF_SIZE, 0)) > 0) {
+    fwrite(bufRecv, nCount, 1, fp);
+  }
+  fclose(fp); // 文件接收完毕后直接关闭套接字，无需调用shutdown()
+
+  printf("File transfer success!\n");
+
+  memset(bufSend, 0, BUF_SIZE); // 重置缓冲区
+  memset(bufRecv, 0, BUF_SIZE); // 重置缓冲区
+
+  close(sock); // 关闭套接字
 
   return 0;
 }
