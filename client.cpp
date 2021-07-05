@@ -17,8 +17,8 @@ int main() {
 
   // 将 IP 地址从文本转换为二进制格式并存储到 sin_addr 中
   if (inet_pton(AF_INET, IP, &serv_addr.sin_addr) <= 0) {
-    std::cout << "Error: Invalid address/ Address not supported" << std::endl;
-    return -1;
+    perror("Error: Invalid address/ Address not supported");
+    exit(EXIT_FAILURE);
   }
 
   char bufSend[BUF_SIZE] = {0};
@@ -27,12 +27,12 @@ int main() {
     // 创建套接字
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
-      std::cout << "Error: Socket creation failed" << std::endl;
-      return -1;
+      perror("Error: Socket creation failed");
+      exit(EXIT_FAILURE);
     }
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      std::cout << "Error: Connection creation failed" << std::endl;
-      return -1;
+      perror("Error: Connection creation failed");
+      exit(EXIT_FAILURE);
     }
     // 获取用户输入的字符串并发送给服务器
     printf("Input a string: ");
