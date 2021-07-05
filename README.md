@@ -89,3 +89,9 @@ Message form server: asd
 - [在socket中使用域名](http://c.biancheng.net/cpp/html/3048.html)
 - [gethostbyname()函数详解.带鱼兄 2016-07-18](https://blog.csdn.net/daiyudong2020/article/details/51946080?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522162546433016780261960009%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=162546433016780261960009&biz_id=0)
 > gethostname可能存在性能瓶颈问题
+
+## UDP
+UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇叭喊话，谁在线谁就会听到。
+
+- [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
+- [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
