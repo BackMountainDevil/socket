@@ -30,6 +30,13 @@ int main() {
       perror("Error: Socket creation failed");
       exit(EXIT_FAILURE);
     }
+
+    /*     // 获取缓冲区大小
+        int optval;
+        socklen_t tmp = sizeof(optval);
+        getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, &tmp);
+        printf("Buffer length = %d\n", optval); */
+
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
       perror("Error: Connection creation failed");
       exit(EXIT_FAILURE);

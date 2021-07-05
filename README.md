@@ -33,3 +33,16 @@ std::cin.getline(buffer, BUF_SIZE); // C++
 需要注意的是，这里的“不中断连接”并非真正意义上的持续性连接，而是不断的连接-关闭-连接，往复循环的连接让用户以为自己是一直和服务端保持连接的。这版的程序支持多个客户端程序同时运行。当多个服务端同时运行的时候，并不会异常报错，而是都会监听端口，至于客户连接到的服务端到底是哪一个，随缘。
 
 - [实现迭代服务器端和客户端](http://c.biancheng.net/cpp/html/3039.html)
+
+## 取得socket 状态 - 缓冲区大小
+通过 `getsockopt()` 中的第三个参数 `__optname` 可以获取到对于的参数值，下面是一个获取缓存区的例子。way 1 在我pc上获取到的值保持在 16384，而 way 2 获取到的值一直在 3.2k 左右变动，极少数的时候数值会突变（原因有待探究，类型转换？）
+
+```bash
+int optval;
+socklen_t tmp = sizeof(optval);
+getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, &tmp); // way 1
+// getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, (socklen_t *)sizeof(optval));  // way 2
+printf("Buffer length = %d\n", optval);
+```
+
+- [socket缓冲区以及阻塞模式](http://c.biancheng.net/cpp/html/3040.html)

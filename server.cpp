@@ -28,6 +28,12 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
+  // 获取缓冲区大小
+  int optval;
+  socklen_t tmp = sizeof(optval);
+  getsockopt(serv_sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, &tmp);
+  printf("Buffer length = %d\n", optval);
+
   serv_addr.sin_family = AF_INET;            //使用IPv4地址
   serv_addr.sin_addr.s_addr = inet_addr(IP); //具体的IP地址
   serv_addr.sin_port = htons(PORT);          //端口
