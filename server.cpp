@@ -64,6 +64,7 @@ int main() {
     read(clnt_sock, buffer, sizeof(buffer) - 1);
     printf("Message form client: %s\n", buffer);
 
+    sleep(10); //注意这里，让程序暂停10秒
     //向客户端发送数据
     write(clnt_sock, buffer, sizeof(buffer));
     //关闭套接字

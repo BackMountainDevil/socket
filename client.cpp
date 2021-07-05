@@ -31,12 +31,6 @@ int main() {
       exit(EXIT_FAILURE);
     }
 
-    /*     // 获取缓冲区大小
-        int optval;
-        socklen_t tmp = sizeof(optval);
-        getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, &tmp);
-        printf("Buffer length = %d\n", optval); */
-
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
       perror("Error: Connection creation failed");
       exit(EXIT_FAILURE);
@@ -44,7 +38,9 @@ int main() {
     // 获取用户输入的字符串并发送给服务器
     printf("Input a string: ");
     std::cin.getline(bufSend, BUF_SIZE);
-    write(sock, bufSend, sizeof(bufSend));
+    for (int i = 0; i < 20; i++) {
+      write(sock, bufSend, sizeof(bufSend));
+    }
 
     //读取服务器传回的数据
     read(sock, bufRecv, sizeof(bufRecv) - 1);
