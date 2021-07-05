@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +13,7 @@
 
 int main() {
   /* sock_fd --- socket文件描述符 创建udp套接字*/
+  // . SOCK_DGRAM 表示使用 UDP 协议
   int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock_fd < 0) {
     perror("Socket failed");
@@ -34,14 +34,11 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  char bufSend[BUF_SIZE] = "I am server!";
-  char bufRecv[BUF_SIZE];
+  char buffer[BUF_SIZE];
   struct sockaddr_in addr_client;
 
   while (true) {
-    printf("Server wait:\n");
-
-    int recv_num = recvfrom(sock_fd, bufRecv, sizeof(bufRecv), 0,
+    int recv_num = recvfrom(sock_fd, buffer, sizeof(buffer), 0,
                             (struct sockaddr *)&addr_client, (socklen_t *)&len);
 
     if (recv_num < 0) {
@@ -49,16 +46,16 @@ int main() {
       exit(1);
     }
 
-    bufRecv[recv_num] = '\0';
-    printf("Server receive %d bytes: %s\n", recv_num, bufRecv);
+    buffer[recv_num] = '\0';
+    printf("Server receive %d bytes: %s\n", recv_num, buffer);
 
-    int send_num = sendto(sock_fd, bufSend, recv_num, 0,
+    int send_num = sendto(sock_fd, buffer, recv_num, 0,
                           (struct sockaddr *)&addr_client, len);
-
     if (send_num < 0) {
       perror("Sendto error:");
       exit(1);
     }
+    memset(buffer, 0, BUF_SIZE); //重置缓冲区
   }
 
   close(sock_fd);
