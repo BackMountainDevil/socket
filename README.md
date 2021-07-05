@@ -1,5 +1,8 @@
 # socket
 基于 Linux 的 socket 编程。
+## 待改进部分（暂时不会整的部分）
+- 缓冲区大小中的读值问题
+- udp 傻等问题
 
 ## 最简单的 CS 通信
 使用`git checkout basic`签出对应版本的代码。首先运行服务器程序(server.cpp)，其会等待客户端(client.cpp)发起请求。然后运行客户端程序，客户端连接到服务器后，会收到服务器返回的数据，然后各自结束。
@@ -92,6 +95,8 @@ Message form server: asd
 
 ## UDP
 UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇叭喊话，谁在线谁就会听到。
+
+使用`git checkout udp`签出对应版本的代码。首先运行服务端程序，然后再运行客户端程序，不然客户端就会傻傻的等待服务端返回数据；即使后面一次加入新的服务端、客户端，也无法拯救这几个傻子。
 
 - [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
 - [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
