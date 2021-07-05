@@ -64,6 +64,7 @@ printf("Buffer length = %d\n", optval);
 > 例如，write()/send() 重复执行三次，每次都发送字符串"abc"，那么目标机器上的 read()/recv() 可能分三次接收，每次都接收"abc"；也可能分两次接收，第一次接收"abcab"，第二次接收"cabc"；也可能一次就接收到字符串"abcabcabc"。
 
 服务端延迟 10s 再原样返回数据 且 客户端一下子发生好多条数据 的办法按照网站上的修改应该会出现“粘包”现象，然而它的结果既不是“粘包”也不是返回多条数据，而是只返回了一条数据。。
+使用`git checkout stuck`签出对应版本的代码。
 ```bash
 $ ./server
 Buffer length = 16384
