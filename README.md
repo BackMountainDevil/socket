@@ -108,6 +108,33 @@ UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇�
 
 目前存在的问题有沟通不同步，会存在异步和丢失的情况。
 
+## 聊天室 CSC
+在多客户聊天室中，服务端作为消息的转发者，接受来自不同客户的消息，随后将消息转发至对应的客户。为了达到这一目的，服务端需要存储所有客户端的连接和标识。
+
+### select
+
+```cpp
+// #include <sys/time.h> 
+fd_set readfds;
+
+// 清空文件描述符集合（全部置零）
+FD_ZERO(&readfds);  
+
+// 向集合中对于位置添加文件描述符
+FD_SET(master_sock, &readfds);   
+
+// 从集合中清除文件描述符
+FD_CLR(master_sock, &readfds); 
+
+// 检查关心的文件描述符是否有读事件发生
+FD_ISSET(master_sock, &readfds); 
+```
+
+`select()` 命令可以从多个客户连接中选出活跃的那个（如果有的话），像中断控制器。
+
+- [C++ socket 网络编程 简单聊天室. Thanks_up.  2019-03-13](https://www.cnblogs.com/DCD112358/p/10522172.html):从基本的CS 到 CSCs（select）,最后谈到优化（epoll、线程池）: select + keyNode
+- [Socket Programming in C/C++: Handling multiple clients on server without multi threading. 30 May, 2018](https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/): select + fd_set
+
 # 参考
 - [C/C++ socket编程教程：1天玩转socket通信技术](http://c.biancheng.net/cpp/socket/):主要是 windows 版本的，但是基本原理差不多
 - [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)：Linux 版本的 socket，照此修改了不少，学习了不少错误处理

@@ -139,10 +139,19 @@ int main(int argc, char *argv[]) {
           for (k = 0; k < msg.length(); k++)
             buffer[k] = msg[k];
           buffer[k] = '\0';
-          if (write(sd, buffer, sizeof(buffer)) < 0) {
-            perror("Error: Send fail");
-            close(sd);
+
+          // 发送给所有的客户端
+          for (int i = 0; i < MAXCLIENT; i++) {
+            if (client_socket[i] != 0) {
+              if (write(client_socket[i], buffer, sizeof(buffer)) < 0) {
+                perror("Error: Send fail");
+                close(sd);
+              } else {
+                break;
+              }
+            }
           }
+
           memset(buffer, 0, BUF_SIZE); // 重置缓冲区
         }
       }
