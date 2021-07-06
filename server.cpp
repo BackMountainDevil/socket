@@ -1,96 +1,154 @@
 #include <arpa/inet.h>
 #include <iostream>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
+
 #define BUF_SIZE 100
-#define IP "127.0.0.1"
 #define PORT 8080
-// 一对一自由交流服务端
-int main() {
-  //创建套接字
-  int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (serv_sock == 0) {
-    perror("Socket failed");
-    close(serv_sock);
-    exit(EXIT_FAILURE); // 相当于 exit(1)
+#define MAXCLIENT 10 // 最大连接客户数
+
+int main(int argc, char *argv[]) {
+  int opt = true;
+  int master_socket, addrlen, new_socket, client_socket[MAXCLIENT], activity,
+      sd, max_sd;
+  struct sockaddr_in address;
+  char buffer[BUF_SIZE];
+
+  // socket 描述文件的集合
+  fd_set readfds;
+
+  // 将所有客户的 socket 描述文件初始化为 0.  so not checked
+  for (int i = 0; i < MAXCLIENT; i++) {
+    client_socket[i] = 0;
   }
 
-  //将套接字和IP、端口绑定
-  struct sockaddr_in serv_addr;
-  memset(&serv_addr, 0, sizeof(serv_addr)); //每个字节都用0填充
-  int opt = 1;
-  // Forcefully attaching socket to the port 8080
-  if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                 sizeof(opt))) {
-    perror("Setsockopt:端口/地址 已经被占用");
-    close(serv_sock);
+  // 创建 主 socket
+  if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+    perror("socket failed");
+    close(master_socket);
     exit(EXIT_FAILURE);
   }
 
-  serv_addr.sin_family = AF_INET;            //使用IPv4地址
-  serv_addr.sin_addr.s_addr = inet_addr(IP); //具体的IP地址
-  serv_addr.sin_port = htons(PORT);          //端口
-  if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-    perror("Bind failed");
-    close(serv_sock);
+  // 设置允许 主socket 建立多个连接； 这只是一个好习惯，不设置这个也能正常运行
+  if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,
+                 sizeof(opt)) < 0) {
+    perror("setsockopt");
+    close(master_socket);
     exit(EXIT_FAILURE);
   }
 
-  //进入监听状态，等待用户发起请求
-  if (listen(serv_sock, 20) < 0) {
-    perror("Listen");
-    close(serv_sock);
+  // type of socket created
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = INADDR_ANY;
+  address.sin_port = htons(PORT);
+
+  if (bind(master_socket, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    perror("bind failed");
+    close(master_socket);
     exit(EXIT_FAILURE);
   }
 
-  //接收客户端请求
-  struct sockaddr_in clnt_addr;
-  socklen_t clnt_addr_size = sizeof(clnt_addr);
-  int clnt_sock =
-      accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-  if (clnt_sock < 0) {
-    perror("Accept");
-    close(serv_sock);
+  // 尝试为主套接字指定最多 3 个挂起的连接
+  if (listen(master_socket, 3) < 0) {
+    perror("listen");
+    close(master_socket);
     exit(EXIT_FAILURE);
   }
-  printf("Server: New connection from %s\n",
-         inet_ntoa(clnt_addr.sin_addr)); // 获取客户端的 IP
-  char bufSend[BUF_SIZE] = {0};
-  char bufRecv[BUF_SIZE] = {0};
+
+  // 接收即将到来的连接
+  addrlen = sizeof(address);
+  puts("Waiting for connections ...");
 
   while (true) {
-    if (read(clnt_sock, bufRecv, sizeof(bufRecv) - 1) <
-        0) { // 接收客户端发来的数据
-      perror("Error: Receive fail");
-      break;
+    FD_ZERO(&readfds);               // 清空集合
+    FD_SET(master_socket, &readfds); // 将 主socket 添加到集合中
+    max_sd = master_socket;
+    // 将 子socket 添加到集合中
+    for (int i = 0; i < MAXCLIENT; i++) {
+      // socket descriptor
+      sd = client_socket[i];
+
+      // 如果套接字描述符是有效的，就添加到读取列表中
+      if (sd > 0)
+        FD_SET(sd, &readfds);
+
+      // 选择最大的描述符， 选择功能的时候需要它
+      if (sd > max_sd)
+        max_sd = sd;
     }
-    printf("Message form client: %s\n", bufRecv);
-    if (!strcmp(bufRecv, "exit")) { // 收到 ‘exit’ ,逐步终止程序
-      break;
+    // 等待其中某个 socket 被激活。超时时间设置为 NULL，所以会无限等待
+    activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
+    if ((activity < 0) && (errno != EINTR)) {
+      printf("select error");
     }
 
-    // 获取用户输入的字符串并发送给客户端
-    printf("Input a string: ");
-    std::cin.getline(bufSend, BUF_SIZE);
-    if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
-      perror("Error: Send fail\n");
-      break;
+    // 如果 主socket发生了啥，说明有新连接来了
+    if (FD_ISSET(master_socket, &readfds)) {
+      if ((new_socket = accept(master_socket, (struct sockaddr *)&address,
+                               (socklen_t *)&addrlen)) < 0) {
+        perror("accept");
+        close(new_socket);
+        close(master_socket);
+        exit(EXIT_FAILURE);
+      }
+
+      // 显示新客户的 socket number （用来发送和接受命令）
+      printf("New connection , socket fd is %d , ip is : %s , port : %dn ",
+             new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+
+      // 给新客户发送问候消息
+      std::string msg =
+          "Hello. Your socket number: " + std::to_string(new_socket);
+      int k; // string 转 char[]
+      for (k = 0; k < msg.length(); k++)
+        buffer[k] = msg[k];
+      buffer[k] = '\0';
+      if (write(new_socket, buffer, sizeof(buffer)) < 0) {
+        perror("Error: Send fail\n");
+        break;
+      }
+
+      // 将新连接添加到 sockets 数组中
+      for (int i = 0; i < MAXCLIENT; i++) {
+        if (client_socket[i] == 0) { // 找到第一个空位
+          client_socket[i] = new_socket;
+          printf("Adding to list of sockets as %d\n", i);
+          break;
+        }
+      }
     }
-    if (!strcmp(bufSend, "exit")) { // 输入 ‘exit’ ,逐步终止程序
-      shutdown(clnt_sock, SHUT_WR); // 关闭输出流
-      printf("Log: Output close\n");
-      read(clnt_sock, bufRecv, sizeof(bufRecv) - 1); // 阻塞，等待客户端接收完毕
-      break;
+
+    // 对子 socket 进行检查
+    for (int i = 0; i < MAXCLIENT; i++) {
+      sd = client_socket[i];
+      if (FD_ISSET(sd, &readfds)) {
+        int valread = read(sd, buffer, sizeof(buffer));
+        // std::cout << sd << " activated, len = " << valread << std::endl;
+        if (valread <= 0) { // 掉线用户
+          // 客户掉线：输出其相关信息
+          getpeername(sd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+          printf("Host disconnected, socket fd %d , ip %s , port %d \n", sd,
+                 inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+          // 关闭掉线客户的 socket,并标记为 0,以便重新使用
+          close(sd);
+          client_socket[i] = 0;
+        } else { // 针对未掉线用户，把收到的信息传回去给客户
+          std::cout << sd << " :  " << buffer << std::endl;
+          std::string msg = std::to_string(sd) + " : " + buffer;
+          int k; // string 转 char[]
+          for (k = 0; k < msg.length(); k++)
+            buffer[k] = msg[k];
+          buffer[k] = '\0';
+          if (write(sd, buffer, sizeof(buffer)) < 0) {
+            perror("Error: Send fail");
+            close(sd);
+          }
+          memset(buffer, 0, BUF_SIZE); // 重置缓冲区
+        }
+      }
     }
   }
-
-  close(clnt_sock);
-  printf("Log: Client Socket close\n");
-  close(serv_sock);
-  printf("Log: Server Socket close\n");
+  close(master_socket);
+  puts("Server close");
   return 0;
 }
