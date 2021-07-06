@@ -17,6 +17,7 @@ int main() {
   int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock_fd < 0) {
     perror("Socket failed");
+    close(sock_fd);
     exit(EXIT_FAILURE);
   }
 
@@ -31,6 +32,7 @@ int main() {
   /* 绑定socket */
   if (bind(sock_fd, (struct sockaddr *)&addr_serv, sizeof(addr_serv)) < 0) {
     perror("Bind failed");
+    close(sock_fd);
     exit(EXIT_FAILURE);
   }
 
@@ -43,6 +45,7 @@ int main() {
 
     if (recv_num < 0) {
       perror("Recvfrom error:");
+      close(sock_fd);
       exit(1);
     }
 
@@ -53,6 +56,7 @@ int main() {
                           (struct sockaddr *)&addr_client, len);
     if (send_num < 0) {
       perror("Sendto error:");
+      close(sock_fd);
       exit(1);
     }
     memset(buffer, 0, BUF_SIZE); //重置缓冲区

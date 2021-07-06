@@ -14,6 +14,7 @@ int main() {
   int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (serv_sock == 0) {
     perror("Socket failed");
+    close(serv_sock);
     exit(EXIT_FAILURE); // 相当于 exit(1)
   }
 
@@ -25,6 +26,7 @@ int main() {
   if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
                  sizeof(opt))) {
     perror("Setsockopt:端口/地址 已经被占用");
+    close(serv_sock);
     exit(EXIT_FAILURE);
   }
 
@@ -33,45 +35,40 @@ int main() {
   serv_addr.sin_port = htons(PORT);          //端口
   if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
     perror("Bind failed");
+    close(serv_sock);
     exit(EXIT_FAILURE);
   }
 
   //进入监听状态，等待用户发起请求
   if (listen(serv_sock, 20) < 0) {
     perror("Listen");
+    close(serv_sock);
     exit(EXIT_FAILURE);
   }
 
   //接收客户端请求
   struct sockaddr_in clnt_addr;
   socklen_t clnt_addr_size = sizeof(clnt_addr);
-  char buffer[BUF_SIZE] = {0};
 
-  int clnt_sock =
-      accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-  if (clnt_sock < 0) {
-    perror("Accept");
-    exit(EXIT_FAILURE);
+  while (true) {
+    int clnt_sock =
+        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+    if (clnt_sock < 0) {
+      perror("Accept");
+      close(serv_sock);
+      exit(EXIT_FAILURE);
+    }
+    //接收客户端发来的数据
+    char buffer[BUF_SIZE] = {0};
+    read(clnt_sock, buffer, sizeof(buffer) - 1);
+    printf("Message form client: %s\n", buffer);
+
+    //向客户端发送数据
+    write(clnt_sock, buffer, sizeof(buffer));
+
+    //关闭套接字
+    close(clnt_sock);
   }
-
-  FILE *fp = fopen("./client.cpp", "rb"); // 以二进制方式打开文件
-  if (fp == NULL) {                       // 先检查文件是否存在
-    perror("Cannot open file");
-    exit(EXIT_FAILURE);
-  }
-  int nCount;
-  while ((nCount = fread(buffer, 1, BUF_SIZE, fp)) > 0) {
-    write(clnt_sock, buffer, nCount);
-  }
-  fclose(fp);                   // 关闭文件
-  shutdown(clnt_sock, SHUT_WR); //文件读取完毕，断开输出流，向客户端发送FIN包
-
-  read(clnt_sock, buffer, sizeof(buffer) - 1); // 阻塞，等待客户端接收完毕
-  printf("File transfer success!\n");
-  //关闭套接字
-  close(clnt_sock);
-  memset(buffer, 0, BUF_SIZE); //重置缓冲区
-
   close(serv_sock);
 
   return 0;

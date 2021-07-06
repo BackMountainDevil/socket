@@ -19,6 +19,7 @@ int main() {
   sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock_fd < 0) {
     perror("Socket failed");
+    close(sock_fd);
     exit(EXIT_FAILURE);
   }
 
@@ -44,6 +45,7 @@ int main() {
 
     if (send_num < 0) {
       perror("Sendto error:");
+      close(sock_fd);
       exit(EXIT_FAILURE);
     }
     bufSend[send_num] = '\0';
@@ -55,6 +57,7 @@ int main() {
 
     if (recv_num < 0) {
       perror("Recvfrom error:");
+      close(sock_fd);
       exit(EXIT_FAILURE);
     }
 

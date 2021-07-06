@@ -26,6 +26,7 @@ std::cin.getline(buffer, BUF_SIZE); // C++
 ## 错误处理
 使用`git checkout basicError`签出对应版本的代码。
 - [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)
+- [C语言技术网 - 网络通信socket。- 码农有道](http://www.freecplus.net/0047ac4059b14d52bcc1d4df6ae8bb83.html)：错误处理比上一个多一个步骤：每次出错都会尝试关闭 socket
 - [inet_pton()和inet_ntop()函数详解. QvQ是惊喜不是哭泣 2017-02-28](https://blog.csdn.net/zyy617532750/article/details/58595700)
 - [C 库函数 - perror()](https://www.runoob.com/cprogramming/c-function-perror.html)
 - [C语言setsockopt()函数：设置socket状态](http://c.biancheng.net/cpp/html/374.html)
@@ -36,6 +37,7 @@ std::cin.getline(buffer, BUF_SIZE); // C++
 需要注意的是，这里的“不中断连接”并非真正意义上的持续性连接，而是不断的连接-关闭-连接，往复循环的连接让用户以为自己是一直和服务端保持连接的。这版的程序支持多个客户端程序同时运行。当多个服务端同时运行的时候，并不会异常报错，而是都会监听端口，至于客户连接到的服务端到底是哪一个，随缘。
 
 - [实现迭代服务器端和客户端](http://c.biancheng.net/cpp/html/3039.html)
+
 ## socket缓冲区以及阻塞模式
 
 - [socket缓冲区以及阻塞模式](http://c.biancheng.net/cpp/html/3040.html)
@@ -100,3 +102,8 @@ UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇�
 
 - [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
 - [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
+
+# 参考
+- [C/C++ socket编程教程：1天玩转socket通信技术](http://c.biancheng.net/cpp/socket/):主要是 windows 版本的，但是基本原理差不多
+- [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)：Linux 版本的 socket，照此修改了不少，学习了不少错误处理
+- [C语言技术网 - 网络通信socket。- 码农有道](http://www.freecplus.net/0047ac4059b14d52bcc1d4df6ae8bb83.html)
