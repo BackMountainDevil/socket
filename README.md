@@ -103,6 +103,11 @@ UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇�
 - [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
 - [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
 
+## CS TCP 一对一自由交流
+使用`git checkout talkCS`签出对应版本的代码。在理解完 socket 通信基本原理之后，这个实现起来就很简单了，CS 两端都不关闭连接直到某一方关闭连接，这样双方都能持续不断的交流，需要注意的是关闭 socket 前应用 shutdown 关闭输出流，直到输出流发完才关闭 socket。
+
+目前存在的问题有沟通不同步，会存在异步和丢失的情况。
+
 # 参考
 - [C/C++ socket编程教程：1天玩转socket通信技术](http://c.biancheng.net/cpp/socket/):主要是 windows 版本的，但是基本原理差不多
 - [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)：Linux 版本的 socket，照此修改了不少，学习了不少错误处理

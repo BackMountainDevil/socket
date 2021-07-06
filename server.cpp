@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <iostream>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #define BUF_SIZE 100
 #define IP "127.0.0.1"
 #define PORT 8080
-
+// 一对一自由交流服务端
 int main() {
   //创建套接字
   int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -49,27 +50,47 @@ int main() {
   //接收客户端请求
   struct sockaddr_in clnt_addr;
   socklen_t clnt_addr_size = sizeof(clnt_addr);
+  int clnt_sock =
+      accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+  if (clnt_sock < 0) {
+    perror("Accept");
+    close(serv_sock);
+    exit(EXIT_FAILURE);
+  }
+  printf("Server: New connection from %s\n",
+         inet_ntoa(clnt_addr.sin_addr)); // 获取客户端的 IP
+  char bufSend[BUF_SIZE] = {0};
+  char bufRecv[BUF_SIZE] = {0};
 
   while (true) {
-    int clnt_sock =
-        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-    if (clnt_sock < 0) {
-      perror("Accept");
-      close(serv_sock);
-      exit(EXIT_FAILURE);
+    if (read(clnt_sock, bufRecv, sizeof(bufRecv) - 1) <
+        0) { // 接收客户端发来的数据
+      perror("Error: Receive fail");
+      break;
     }
-    //接收客户端发来的数据
-    char buffer[BUF_SIZE] = {0};
-    read(clnt_sock, buffer, sizeof(buffer) - 1);
-    printf("Message form client: %s\n", buffer);
+    printf("Message form client: %s\n", bufRecv);
+    if (!strcmp(bufRecv, "exit")) { // 收到 ‘exit’ ,逐步终止程序
+      break;
+    }
 
-    //向客户端发送数据
-    write(clnt_sock, buffer, sizeof(buffer));
-
-    //关闭套接字
-    close(clnt_sock);
+    // 获取用户输入的字符串并发送给客户端
+    printf("Input a string: ");
+    std::cin.getline(bufSend, BUF_SIZE);
+    if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
+      perror("Error: Send fail\n");
+      break;
+    }
+    if (!strcmp(bufSend, "exit")) { // 输入 ‘exit’ ,逐步终止程序
+      shutdown(clnt_sock, SHUT_WR); // 关闭输出流
+      printf("Log: Output close\n");
+      read(clnt_sock, bufRecv, sizeof(bufRecv) - 1); // 阻塞，等待客户端接收完毕
+      break;
+    }
   }
-  close(serv_sock);
 
+  close(clnt_sock);
+  printf("Log: Client Socket close\n");
+  close(serv_sock);
+  printf("Log: Server Socket close\n");
   return 0;
 }

@@ -8,7 +8,7 @@
 #define BUF_SIZE 100
 #define IP "127.0.0.1"
 #define PORT 8080
-
+// 一对一自由交流客户端
 int main() {
   struct sockaddr_in serv_addr;
   memset(&serv_addr, 0, sizeof(serv_addr)); //每个字节都用0填充
@@ -21,37 +21,47 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
+  // 创建套接字
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("Error: Socket creation failed");
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("Error: Connection creation failed");
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
   char bufSend[BUF_SIZE] = {0};
   char bufRecv[BUF_SIZE] = {0};
+
   while (true) {
-    // 创建套接字
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-      perror("Error: Socket creation failed");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      perror("Error: Connection creation failed");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
-    // 获取用户输入的字符串并发送给服务器
+    // 获取用户输入的字符串并发送给服务端
     printf("Input a string: ");
     std::cin.getline(bufSend, BUF_SIZE);
-    if (!strcmp(bufSend, "exit")) { // 输入 ‘exit’ 终止程序
+    if (write(sock, bufSend, sizeof(bufSend)) < 0) {
+      perror("Error: Send fail\n");
       break;
     }
-    write(sock, bufSend, sizeof(bufSend));
+    if (!strcmp(bufSend, "exit")) { // 输入 ‘exit’ ,逐步终止程序
+      shutdown(sock, SHUT_WR);      // 关闭输出流
+      printf("Log: Output close\n");
+      read(sock, bufRecv, sizeof(bufRecv) - 1);
+      break;
+    }
 
     //读取服务器传回的数据
-    read(sock, bufRecv, sizeof(bufRecv) - 1);
+    if (read(sock, bufRecv, sizeof(bufRecv) - 1) < 0) {
+      perror("Error: Receive fail");
+      break;
+    }
     printf("Message form server: %s\n", bufRecv);
-
-    memset(bufSend, 0, BUF_SIZE); // 重置缓冲区
-    memset(bufRecv, 0, BUF_SIZE); // 重置缓冲区
-    close(sock);                  // 关闭套接字
+    if (!strcmp(bufRecv, "exit")) { // 收到 ‘exit’ ,逐步终止程序
+      break;
+    }
   }
-
+  close(sock); // 关闭套接字
+  printf("Log: Socket close\n");
   return 0;
 }
