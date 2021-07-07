@@ -29,7 +29,7 @@ Error: Connection creation failed: Connection refused
 - socket  
     `int socket (int __domain, int __type, int __protocol)`  
     定义在 <socket.h> 中，作用是创建套接字。创建失败时返回 -1,成功时返回套接字描述符。  
-    __domain：协议族。AF_INET 指的是 TCP/IP 协议  
+    __domain：协议族。AF_INET 指的是 IPv4，AF_INET6 指的是 IPv6    
     __type：通信服务类型。SOCK_STREAM：TCP，SOCK_DGRAM: UDP  
     __protocol：协议号。前两个参数基本能确定一个协议，在 TCP/IP 协议中 0 表示使用 TCP 协议
 
