@@ -48,11 +48,9 @@ int main() {
 
     // 输入 ‘\q’ ,逐步终止程序
     if (!strcmp(bufSend, "\\q")) {
-      shutdown(sock, SHUT_WR); // 关闭输出流
-      printf("Log: Output close\n");
-      read(sock, bufRecv, sizeof(bufRecv));
       close(sock);
-      exit(EXIT_FAILURE);
+      printf("Log: Output close\n");
+      break;
     }
 
     // 读取服务器传回的数据
@@ -67,9 +65,7 @@ int main() {
     memset(bufSend, 0, BUF_SIZE);
     memset(bufRecv, 0, BUF_SIZE);
   }
-  printf("Message form server: %s\n", bufRecv);
 
-  // 关闭套接字
   printf("Client close\n");
   return 0;
 }

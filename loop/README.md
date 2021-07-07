@@ -35,14 +35,10 @@ Input: asdv
 Recv: asdv
 Input: \q
 Log: Output close
+Client close
 ```
 
 ### 函数解释
-
-- shutdown  
-    `int shutdown (int __fd, int __how)`  
-    定义在 <socket.h> 中，作用是将套接字（__fd）的某些功能关闭。失败时返回 -1,成功时返回 0  
-    __how：SHUT_RD 代表关闭输入流，SHUT_WR 关闭输出流， SHUT_RDWR 则是都关了
 
 - memset  
     `void *memset (void *__s, int __c, size_t __n)`  
