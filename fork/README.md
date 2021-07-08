@@ -15,19 +15,18 @@ $ ps au
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 kearney    25662  0.0  0.0  13336  3480 pts/3    R+   17:16   0:00 ps au
 
-$ ./zombie This PID: 25709, parent's pid: 11790, pid -1
+$ ./zombie 
+This PID: 66258, parent's pid: 65330, pid -1
 Begin to fork
 Fork done
-This PID: 25709, parent's pid: 11790, pid 25710  from child proc
+This PID: 66258, parent's pid: 65330, pid 66259  from parent proc
 Fork done
-This PID: 25710, parent's pid: 25709, pid 0  from child proc
-This PID: 25710, parent's pid: 25709, pid 0
-This PID: 25710, parent's pid: 25709, pid 0  from child proc
-This PID 25710, pid 0: exit
+This PID: 66259, parent's pid: 66258, pid 0  from child proc
+This PID: 66259, parent's pid: 66258, pid 0
+This PID 66259, pid 0: exit
 # 这里会有 10 s 的挂机等待，在这个时候开启另一个终端查看用户进程
-This PID: 25709, parent's pid: 11790, pid 25710
-This PID: 25709, parent's pid: 11790, pid 25710  from child proc
-This PID 25709, pid 25710: exit
+This PID: 66258, parent's pid: 65330, pid 66259
+This PID 66258, pid 66259: exit
 ```
 
 可以从下面看到 COMMAND 中与 PID 25709 对应的正是我们的程序 `./zombie`，而 PID 25709 对应的子进程早已运行完成，但它就是没有被销毁，因此变成了僵尸进程，在 COMMAND 被标记为 `[zombie] <defunct>`， STAT 变为 `Z+`。当程序的父子进程都运行结束的时候，这个僵尸进程被父进程销毁，是的，被父进程销毁了，而不是在子进程运行结束的时候被操作系统销毁。
@@ -36,14 +35,8 @@ This PID 25709, pid 25710: exit
 # 查看用户进程，运行程序中，程序处于那个挂机状态
 $ ps au
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-kearney    25709  0.0  0.0   2364   672 pts/2    S+   17:16   0:00 ./zombie
-kearney    25710  0.0  0.0      0     0 pts/2    Z+   17:16   0:00 [zombie] <defunct>
-kearney    25735  0.0  0.0  13336  3596 pts/3    R+   17:16   0:00 ps au
-
-# 查看用户进程，程序已经运行结束
-$ ps au
-USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-kearney    25873  0.0  0.0  13336  3528 pts/3    R+   17:17   0:00 ps au
+kearney    66258  0.0  0.0   2364   740 pts/4    S+   22:17   0:00 ./zombie
+kearney    66259  0.0  0.0      0     0 pts/4    Z+   22:17   0:00 [zombie] <defunct>
 ```
 
 #### 后台运行
