@@ -12,6 +12,7 @@ int main() {
   if (pid == 0) { // 子进程
     printf("This PID: %d, parent's pid: %d, pid %d  from child proc\n",
            getpid(), getppid(), pid);
+    sleep(5); // 挂机 5 秒，主要是为了凸显出阻塞
     return 11;
   } else { // 父进程
     printf("This PID: %d, parent's pid: %d, pid %d  from parnet proc\n",
@@ -21,22 +22,26 @@ int main() {
     if (pid == 0) { // 子进程
       printf("This PID: %d, parent's pid: %d, pid %d  from child proc\n",
              getpid(), getppid(), pid);
+      sleep(10); // 挂机 10 秒，主要是为了凸显出阻塞
       return 22;
     } else { // 父进程
       printf("This PID: %d, parent's pid: %d, pid %d  from parnet proc\n",
              getpid(), getppid(), pid);
 
+      printf("waiting\n");
       wait(&status);
       if (WIFEXITED(status)) { // 是正常终止的吗
         printf("This child normal terminated, return  %d\n",
                WEXITSTATUS(status)); // 返回值是多少
       }
 
+      printf("waiting\n");
       wait(&status);
       if (WIFEXITED(status)) {
-        printf("This child return  %d\n", WEXITSTATUS(status));
+        printf("This child normal terminated,  return  %d\n",
+               WEXITSTATUS(status));
       }
-      sleep(10); // 挂机 10 秒
+      sleep(5); // 挂机 5 秒
     }
   }
 

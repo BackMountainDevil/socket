@@ -89,25 +89,42 @@ This PID 30480, pid 30481: exit
 使用 wait 销毁已经运行完成的子进程，需要注意的是，调用 wait 函数的时候，如果没有已终止的子进程，那么程序将阻塞直到有子进程终止为止！谨慎使用！这个程序与 fork.c 相比，使用了 wait 及时的销毁了子进程，释放了其占用的资源（我也不知道是啥资源），不必再等到主进程结束的时候再来销毁子进程。
 
 ```bash
-$ ./wait This PID: 2442, parent's pid: 1947, pid -1
-This PID: 2442, parent's pid: 1947, pid 2443  from parnet proc
-This PID: 2443, parent's pid: 2442, pid 0  from child proc
-This PID: 2442, parent's pid: 1947, pid 2444  from parnet proc
-This child normal terminated,  return  11
-This PID: 2444, parent's pid: 2442, pid 0  from child proc
-This child normal terminated,  return  22
-# 这里程序挂机了 10 s 
-This PID: 2442, parent's pid: 1947, pid 2444 exit
+# 稍微计时就会发现程序运行了大约 15s。主程序为了等待那个 10s 的子进程结束，阻塞等待了 10s。
+$ ./wait
+This PID: 8698, parent's pid: 1947, pid -1
+This PID: 8698, parent's pid: 1947, pid 8699  from parnet proc
+This PID: 8699, parent's pid: 8698, pid 0  from child proc
+This PID: 8698, parent's pid: 1947, pid 8700  from parnet proc
+waiting
+This PID: 8700, parent's pid: 8698, pid 0  from child proc
+# 这里挂机了 5s，等待子进程结束
+This child normal terminated, return  11
+waiting
+# 这里挂机了 5s，等待子进程结束，为什么不是再等 10s，因为子进程已经运行 5s 了，还剩下 5s
+This child normal terminated, return  22
+# 这里挂机了 5s
+This PID: 8698, parent's pid: 1947, pid 8700 exit
 
 # 另一个终端会话中，此时程序正在挂机，但是可以看到下面没有出现僵尸进程。
 $ ps au
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-kearney     2442  0.0  0.0   2364   676 pts/1    S+   18:37   0:00 ./wait
-kearney     2448  0.0  0.0  13336  3572 pts/3    R+   18:37   0:00 ps au
+kearney     8698  0.0  0.0   2364   676 pts/1    S+   19:22   0:00 ./wait
+kearney     8699  0.0  0.0   2364    88 pts/1    S+   19:22   0:00 ./wait
+kearney     8700  0.0  0.0   2364    88 pts/1    S+   19:22   0:00 ./wait
+
+[kearney@arch cplus]$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney     8698  0.0  0.0   2364   676 pts/1    S+   19:22   0:00 ./wait
+kearney     8700  0.0  0.0   2364    88 pts/1    S+   19:22   0:00 ./wait
+
+$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney     8698  0.0  0.0   2364   676 pts/1    S+   19:22   0:00 ./wait
 ```
 
 ### waitpid.c
-waitpid 函数也能销毁子进程，而且不会引起阻塞。
+waitpid 函数也能销毁子进程，而且不会引起阻塞。wait 为了确保在子进程结束的时候销毁子进程，引入了阻塞等待；而 waitpid 虽然不会阻塞等待，但是并不能确保在子进程结束的时候销毁它。
+
 
 ```bash
 $ ./waitpid 
