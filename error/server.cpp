@@ -22,7 +22,7 @@ int main() {
 
   int opt = 1;
   if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                 sizeof(opt))) {
+                 sizeof(opt)) == -1) {
     perror("Setsockopt:端口/地址 已经被占用");
     close(serv_sock);
     exit(EXIT_FAILURE);
