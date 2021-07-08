@@ -184,6 +184,21 @@ wait..
 signal 函数足以用来解决僵尸进程问题，但是它在不同的类 UNIX 系统里的实现并不完全相同，而 sigaction 函数作用和前者类似，且其在不同的类 UNIX 系统里的实现完全相同
 
 - sigaction.c：演示了如何使用 sigaction 设置信号和回调函数，运行结果与 signal.c  类似  
+- zombie-sig.c:使用 sigaction 解决僵尸进程问题  
+   注册子进程终止信号 SIGCHLD 的处理函数，然后用 waitpid 尝试去销毁它  
+   ```bash
+   # 试着用 `ps au` 看一下有没有僵尸进程
+   $ ./zombie-sig 
+   This PID: 63942, parent's pid: 53290, pid -1
+   This PID: 63942, parent's pid: 53290, pid 63943  from parnet proc
+   wait..
+   This PID: 63943, parent's pid: 63942, pid 0  from child proc
+   wait..
+   wait..
+   wait..
+   This PID: 63942, parent's pid: 53290, pid 63943 exit
+   ``` 
+
 ## 函数解析
 - getpid  
    `__pid_t getpid (void)`  
@@ -216,7 +231,7 @@ signal 函数足以用来解决僵尸进程问题，但是它在不同的类 UNI
 - signal  
    `__sighandler_t signal (int __sig, __sighandler_t __handler)`  
    定义在 <signal.h> 中，作用设置 `__sig` 信号触发时的处理函数为 `__handler`  
-   __sig：<bits/signum-generic.h>定义的十五种触发信号之一；SIGALRM 是指已经用完了用过 alarm 函数注册的时间，SIGINT 是输入 ctrl+c， SIGCHLD 是子进程终止  
+   __sig：<bits/signum-generic.h>定义的十五种触发信号之一；SIGALRM 是指已经用完了用过 alarm 函数注册的时间，SIGINT 是输入 ctrl+c， SIGCHLD 是子进程终止或者暂停    
    __handler：当 `__sig` 触发时要调用的函数
 
 - sigaction  
