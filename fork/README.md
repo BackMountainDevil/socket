@@ -106,6 +106,34 @@ kearney     2442  0.0  0.0   2364   676 pts/1    S+   18:37   0:00 ./wait
 kearney     2448  0.0  0.0  13336  3572 pts/3    R+   18:37   0:00 ps au
 ```
 
+### waitpid.c
+waitpid 函数也能销毁子进程，而且不会引起阻塞。
+
+```bash
+$ ./waitpid 
+This PID: 6756, parent's pid: 1947, pid -1
+This PID: 6756, parent's pid: 1947, pid 6757  from parnet proc
+This PID: 6757, parent's pid: 6756, pid 0  from child proc
+3s passed
+3s passed
+3s passed
+This child return  11
+This PID: 6756, parent's pid: 1947, pid 6757 exit
+
+# 另一个终端，程序运行 9s 内，父子进程都在 run
+$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney     6756  0.0  0.0   2364   676 pts/1    S+   19:09   0:00 ./waitpid
+kearney     6757  0.0  0.0   2364    92 pts/1    S+   19:09   0:00 ./waitpid
+kearney     6763  0.0  0.0  13336  3516 pts/3    R+   19:09   0:00 ps au
+
+# 另一个终端，程序运行 9s ～ 14s 内，子进程 6757 已经被销毁，没有变成僵尸进程
+$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney     6756  0.0  0.0   2364   676 pts/1    S+   19:09   0:00 ./waitpid
+kearney     6783  0.0  0.0  13336  3596 pts/3    R+   19:09   0:00 ps au
+```
+
 ## 函数解析
 - getpid  
    `__pid_t getpid (void)`  
@@ -122,7 +150,14 @@ kearney     2448  0.0  0.0  13336  3572 pts/3    R+   18:37   0:00 ps au
 - wait  
    `__pid_t wait (int *__stat_loc)`  
    定义在 <sys/wait.h> 中，作用销毁已经运行完成的子进程，失败时返回-1,成功时返回终止的子进程 ID，然后将子进程状态写入 `__stat_loc`  
-   调用 wait 函数的时候，如果没有已终止的子进程，那么程序将阻塞直到有子进程终止为止！谨慎使用！
+   调用 wait 函数的时候，如果没有已终止的子进程，那么程序将阻塞直到有子进程终止为止！谨慎使用！  
+   __stat_loc：指向要存储子进程返回状态的变量的指针
+
+- waitpid  
+   `__pid_t waitpid (__pid_t __pid, int *__stat_loc, int __options)`  
+   定义在 <sys/wait.h> 中，作用尝试销毁子进程 `__pid`  
+   __pid：要销毁的子进程的进程号，__pid 大于零就只尝试销毁对于的子进程，__pid 为 -1 就尝试销毁任意子进程，__pid 为 0 就尝试销毁和当前进程在同一个进程组下的任意子进程，如果是 -1 则尝试销毁进程组号为其绝对值的任意子进程  
+   __options：如果传入了常量 WNOHANG，失败时返回-1，成功时返回终止的子进程 ID，子进程还在运行则返回 0。如果传入常量 WUNTRACED，则返回以停止的进程的状态  
 
 # Q&A
 1. 什么是进程（process）?
