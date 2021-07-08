@@ -180,6 +180,10 @@ wait..
 ^CTime out
 ```
 
+### sigaction
+signal 函数足以用来解决僵尸进程问题，但是它在不同的类 UNIX 系统里的实现并不完全相同，而 sigaction 函数作用和前者类似，且其在不同的类 UNIX 系统里的实现完全相同
+
+- sigaction.c：演示了如何使用 sigaction 设置信号和回调函数，运行结果与 signal.c  类似  
 ## 函数解析
 - getpid  
    `__pid_t getpid (void)`  
@@ -214,6 +218,13 @@ wait..
    定义在 <signal.h> 中，作用设置 `__sig` 信号触发时的处理函数为 `__handler`  
    __sig：<bits/signum-generic.h>定义的十五种触发信号之一；SIGALRM 是指已经用完了用过 alarm 函数注册的时间，SIGINT 是输入 ctrl+c， SIGCHLD 是子进程终止  
    __handler：当 `__sig` 触发时要调用的函数
+
+- sigaction  
+   `int sigaction (int __sig, const struct sigaction *__restrict __act, struct sigaction *__restrict __oact)`  
+   定义在 <signal.h> 中，作用是设置当 `__sig` 信号触发时的处理函数，或者获取之前的设置  
+   __sig：触发信号  
+   __act：触发信号时要调用的动作函数
+   __oact：通过此参数获取之前注册的信号处理函数指针，不需要就填 0
 
 # Q&A
 1. 什么是进程（process）?
