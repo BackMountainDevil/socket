@@ -192,6 +192,90 @@ signal 函数足以用来解决僵尸进程问题，但是它在不同的类 UNI
    This PID: 63942, parent's pid: 53290, pid 63943 exit
    ``` 
 
+### 多进程并发服务端
+在 [域名和 IP](../dns/README.md)中使用域名替代 IP 改进了[迭代回声 CS 通信](../loop/README.md)，但依然只能和一个客户端保持正常连接。这里僵尸用多进程实现并发回声服务器。
+
+[server.cpp](server.cpp):多进程并发服务端  
+[client.cpp](client.cpp):客户端  
+
+```bash
+# 编译服务端、客户端
+$ make cs
+
+# 运行服务端，然后打开其它终端
+$ ./server 
+Waiting for connecting
+New client：4 , IP 127.0.0.1 , Port 39642
+New client：4 , IP 127.0.0.1 , Port 39644
+New client：4 , IP 127.0.0.1 , Port 39646
+Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 39642
+New client：4 , IP Child proc 80798 normal terminated, return  0
+127.0.0.1 , Port 39648
+Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 39644
+New client：4 , IP Child proc 80818 normal terminated, return  0
+127.0.0.1 , Port 39650
+Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 39646
+New client：4 , IP 127.0.0.1 , Port 39652
+Child proc 80843 normal terminated, return  0
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39648
+Child proc 80847 normal terminated, return  0
+Accept: Interrupted system call
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39650
+Child proc 80854 normal terminated, return  0
+Accept: Interrupted system call
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39652
+Child proc 80865 normal terminated, return  0
+Accept: Interrupted system call
+
+```
+
+服务端会发生错误 `Accept: Interrupted system call` ，代码中对此错误不是退出而是继续运行，不然服务端就没法继续接受客户端了。  
+错误原因有待探究
+
+这是3个客户端同时在线的案例，注意是同时在线！但是排版问题不太好排就列成了竖版。  
+<details>
+<summary>点击展开案例</summary>
+
+```bash
+# client1
+$ ./client 
+Input: c1
+Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+# client2
+$ ./client 
+Input: c2
+Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+# client3
+$ ./client 
+Input: c3
+Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+# 查看线程，可以看到服务端程序实现了进程并发
+$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney    80785  0.0  0.0   5992  3472 pts/2    S+   23:16   0:00 ./server
+kearney    80797  0.0  0.0   5992  3504 pts/10   S+   23:16   0:00 ./client
+kearney    80817  0.0  0.0   5992  3576 pts/11   S+   23:16   0:00 ./client
+kearney    80842  0.0  0.0   5992  3500 pts/5    S+   23:16   0:00 ./client
+kearney    80847  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
+kearney    80854  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
+kearney    80865  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
+kearney    80892  0.0  0.0  13336  3428 pts/9    R+   23:17   0:00 ps au
+```
+</details>
+
+
 ## 函数解析
 - getpid  
    `__pid_t getpid (void)`  
@@ -260,3 +344,7 @@ signal 函数足以用来解决僵尸进程问题，但是它在不同的类 UNI
 
 - [进程和线程 - 廖雪峰的官方网站](https://www.liaoxuefeng.com/wiki/1016959663602400/1017627212385376)
 - [什么是进程？什么是线程？进程和线程之间的区别是什么？](https://www.cnblogs.com/aaronthon/p/9824396.html)
+
+4. 在 [signal.c](signal.c) 中，回调函数 timeout 在注册的时候已经注册为 SIGALRM 的处理函数，为什么在回调函数内部还要再次对激活信号进行判断呢？
+
+   `signal(SIGALRM, timeout)` 确实是注册 timeout 到 SIGALRM 上，当信号被激活时也会调用回调函数 timeout，函数中再一次判断信号是因为这个函数可以绑定到不同的信号上，如果想为不同的信号做不同的处理，则需要判断信号类型，如果只是单一处理的话，就不需要再判断信号类型。
