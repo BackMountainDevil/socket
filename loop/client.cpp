@@ -54,12 +54,15 @@ int main() {
     }
 
     // 读取服务器传回的数据
-    if (read(sock, bufRecv, sizeof(bufRecv)) < 0) {
+    int recv_num = read(sock, bufRecv, sizeof(bufRecv));
+    if (recv_num == -1) {
       perror("Error: Receive fail");
       close(sock);
       exit(EXIT_FAILURE);
     }
-    std::cout << "Recv: " << bufRecv << std::endl;
+    std::cout << "Recv " << recv_num << " bytes: " << bufRecv << " from IP "
+              << inet_ntoa(serv_addr.sin_addr) << " , Port "
+              << ntohs(serv_addr.sin_port) << std::endl;
     close(sock);
     // 重置缓冲区
     memset(bufSend, 0, BUF_SIZE);

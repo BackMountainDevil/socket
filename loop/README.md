@@ -17,22 +17,52 @@
 ```bash
 $ ./server 
 Waiting for connecting
-New client：4 , IP 127.0.0.1 , Port 38030
+New client：4 , IP 127.0.0.1 , Port 41332
+4：sa  ads
+New client：4 , IP 127.0.0.1 , Port 41334
+4：sad asd
+New client：4 , IP 127.0.0.1 , Port 41336
 4：asd
-New client：4 , IP 127.0.0.1 , Port 38032
-4：asdv
-New client：4 , IP 127.0.0.1 , Port 38034
+New client：4 , IP 127.0.0.1 , Port 41338
+4：2 sd
+New client：4 , IP 127.0.0.1 , Port 41340
+4：sad
+New client：4 , IP 127.0.0.1 , Port 41344
+4：  asd 22e
+New client：4 , IP 127.0.0.1 , Port 41346
+4：ddas
+New client：4 , IP 127.0.0.1 , Port 41348
 4：\q
-```
+New client：4 , IP 127.0.0.1 , Port 41350
+4：ewf
 
-另一个终端
+# 多个客户端的时候混乱的时候
+$ ./client 
+Input: sa  ads
+Recv 1025 bytes: sa  ads from IP 127.0.0.1 , Port 8080
+Input: sad asd
+Recv 1025 bytes: sad asd from IP 127.0.0.1 , Port 8080
+Input: 2 sd
+Recv 1025 bytes: 2 sd from IP 127.0.0.1 , Port 8080
+Input:   asd 22e
+Recv 1025 bytes:   asd 22e from IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
 
-```bash
 $ ./client 
 Input: asd
-Recv: asd
-Input: asdv
-Recv: asdv
+Recv 1025 bytes: asd from IP 127.0.0.1 , Port 8080
+Input: sad
+Recv 1025 bytes: sad from IP 127.0.0.1 , Port 8080
+Input: ddas
+Recv 1025 bytes: ddas from IP 127.0.0.1 , Port 8080
+Input: ewf
+Recv 1025 bytes: ewf from IP 127.0.0.1 , Port 8080
+Input: asd
+Recv 1025 bytes: asd from IP 127.0.0.1 , Port 8080
+Input:  adss
+Recv 1025 bytes:  adss from IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
