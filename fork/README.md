@@ -151,6 +151,35 @@ kearney     6756  0.0  0.0   2364   676 pts/1    S+   19:09   0:00 ./waitpid
 kearney     6783  0.0  0.0  13336  3596 pts/3    R+   19:09   0:00 ps au
 ```
 
+### signal.c
+上面我们用 `ps au` 查看用户进程中有没有僵尸进程，也就是说操作系统知道子进程能识别子进程是否终止，那么当操作系统发现终止的时候告诉程序，然后销毁子进程，释放其占用资源，就可以避免僵尸进程了。
+
+用 signal 来处理大概是这样 - `signal(SIGCHLD, killchild)`，但是这个函数还不够优秀，这里并不会这么做，只是演示下这个函数的作用。signal.c 演示的是以下两个功能  
+- 当用完 alarm 函数注册的时间，调用 timeout 函数  
+- 当按下 ctrl+c 时，调用 interrupt 函数
+
+程序中循环了 3 次 休眠（阻塞）100s，实际程序运行也就不到 7s，这是因为触发信号时将唤醒由于调用 sleep 函数而进入阻塞状态的进程。调用函数的主体是操作系统，但是处于阻塞状态下的进程是无法调用其中的函数的。因此，产生信号的时候，为了调用对应的函数，将唤醒处于阻塞状态的进程，而且进程一旦被唤醒，就不会再进入阻塞状态，即使未到达 sleep 函数中设置的时间也是如此。对应到程序中就是每次 for 循环刚进入阻塞状态不久就由于信号被触发而被唤醒，并且不会再次进入阻塞状态，而是继续程序，进入下一次循环。
+
+```bash
+# 不输入的情况，就让它自己运行
+$ ./signal 
+wait..
+Time out
+wait..
+Time out
+wait..
+Time out
+
+# 当按下 ctrl+c 时，有时候没注意按第三次程序都结束了
+$ ./signal 
+wait..
+^CTime out
+wait..
+^CTime out
+wait..
+^CTime out
+```
+
 ## 函数解析
 - getpid  
    `__pid_t getpid (void)`  
@@ -172,9 +201,19 @@ kearney     6783  0.0  0.0  13336  3596 pts/3    R+   19:09   0:00 ps au
 
 - waitpid  
    `__pid_t waitpid (__pid_t __pid, int *__stat_loc, int __options)`  
-   定义在 <sys/wait.h> 中，作用尝试销毁子进程 `__pid`  
+   定义在 <sys/wait.h> 中，作用是尝试销毁子进程 `__pid`  
    __pid：要销毁的子进程的进程号，__pid 大于零就只尝试销毁对于的子进程，__pid 为 -1 就尝试销毁任意子进程，__pid 为 0 就尝试销毁和当前进程在同一个进程组下的任意子进程，如果是 -1 则尝试销毁进程组号为其绝对值的任意子进程  
    __options：如果传入了常量 WNOHANG，失败时返回-1，成功时返回终止的子进程 ID，子进程还在运行则返回 0。如果传入常量 WUNTRACED，则返回以停止的进程的状态  
+
+- alarm  
+   `unsigned int alarm (unsigned int __seconds)`  
+   定义在 <unistd.h> 中，作用是在 `__seconds` 秒之后触发 `SIGALRM` 信号
+
+- signal  
+   `__sighandler_t signal (int __sig, __sighandler_t __handler)`  
+   定义在 <signal.h> 中，作用设置 `__sig` 信号触发时的处理函数为 `__handler`  
+   __sig：<bits/signum-generic.h>定义的十五种触发信号之一；SIGALRM 是指已经用完了用过 alarm 函数注册的时间，SIGINT 是输入 ctrl+c， SIGCHLD 是子进程终止  
+   __handler：当 `__sig` 触发时要调用的函数
 
 # Q&A
 1. 什么是进程（process）?
