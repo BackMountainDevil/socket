@@ -19,7 +19,7 @@ void keyinterrupt(int sig) {
 int main() {
   signal(SIGALRM, timeout);     // 注册 SIGALRM 信号到 timeout 函数
   signal(SIGINT, keyinterrupt); // 注册 SIGINT 信号到 keycontrol 函数
-  alarm(3);                     // 设置 2 s 后触发信号 SIGALRM
+  alarm(3);                     // 设置 3 s 后触发信号 SIGALRM
   for (int i = 0; i < 3; i++) {
     puts("wait..");
     sleep(100); // 阻塞 100 秒，实际运行不会那么久的
