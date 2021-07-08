@@ -6,6 +6,7 @@
 - [迭代回声 CS 通信](./loop/README.md)：让服务端、客户端保持运行
 - [优雅的断开连接](./elegantClose/README.md)：如何确保对方收到全部数据再关闭连接
 - [域名和 IP](./dns/README.md)：使用域名替代 IP
+- [UDP 迭代回声 CS 通信](./udp/README.md)：将 TCP 改为 UDP
 
 ## [TCP的粘包问题以及数据的无边界性](http://c.biancheng.net/cpp/html/3041.html)
 数据的“粘包”问题：由于缓冲区和阻塞模式的存在，read 读取缓冲区的时候并不是说缓冲区一有数据就读取，而是阻塞等待到缓冲区快满了的时候才去读取缓冲区的数据（为了尽可能多的接收数据）。换句话说，我本来是分批次给你发消息，然而你以为我是连起来说的，或者认为我说话前言不搭后语。
@@ -26,13 +27,6 @@ Message form server: asd
 ```
 
 
-## UDP
-UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇叭喊话，谁在线谁就会听到。
-
-使用`git checkout udp`签出对应版本的代码。首先运行服务端程序，然后再运行客户端程序，不然客户端就会傻傻的等待服务端返回数据；即使后面一次加入新的服务端、客户端，也无法拯救这几个傻子。
-
-- [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
-- [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
 
 
 ## 聊天室 CSC
