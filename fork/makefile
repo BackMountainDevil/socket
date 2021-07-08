@@ -2,9 +2,10 @@ CC = g++
 CFLAGS = -std=c++11
 C = gcc
 
-all: zombie.cpp fork.cpp
-	$(C) fork.cpp   -o fork
-	$(C) zombie.cpp  -o zombie
- 
+all: zombie.c fork.c wait.c
+	$(C) fork.c   -o fork
+	$(C) zombie.c  -o zombie
+	$(C) wait.c -o wait
+
 clean:
-	rm  fork zombie
+	rm  fork zombie wait

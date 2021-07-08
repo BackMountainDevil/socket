@@ -85,7 +85,26 @@ This PID 30480, pid 30481: exit
 ```
 
 
+### wait.c
+使用 wait 销毁已经运行完成的子进程，需要注意的是，调用 wait 函数的时候，如果没有已终止的子进程，那么程序将阻塞直到有子进程终止为止！谨慎使用！这个程序与 fork.c 相比，使用了 wait 及时的销毁了子进程，释放了其占用的资源（我也不知道是啥资源），不必再等到主进程结束的时候再来销毁子进程。
 
+```bash
+$ ./wait This PID: 2442, parent's pid: 1947, pid -1
+This PID: 2442, parent's pid: 1947, pid 2443  from parnet proc
+This PID: 2443, parent's pid: 2442, pid 0  from child proc
+This PID: 2442, parent's pid: 1947, pid 2444  from parnet proc
+This child normal terminated,  return  11
+This PID: 2444, parent's pid: 2442, pid 0  from child proc
+This child normal terminated,  return  22
+# 这里程序挂机了 10 s 
+This PID: 2442, parent's pid: 1947, pid 2444 exit
+
+# 另一个终端会话中，此时程序正在挂机，但是可以看到下面没有出现僵尸进程。
+$ ps au
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+kearney     2442  0.0  0.0   2364   676 pts/1    S+   18:37   0:00 ./wait
+kearney     2448  0.0  0.0  13336  3572 pts/3    R+   18:37   0:00 ps au
+```
 
 ## 函数解析
 - getpid  
@@ -100,6 +119,10 @@ This PID 30480, pid 30481: exit
     `__pid_t fork (void)`   
    定义在 <unistd.h> 中，作用是克隆一份调用这个函数的进程。失败返回 -1，成功成功时返回子进程 ID，子进程则返回 0
 
+- wait  
+   `__pid_t wait (int *__stat_loc)`  
+   定义在 <sys/wait.h> 中，作用销毁已经运行完成的子进程，失败时返回-1,成功时返回终止的子进程 ID，然后将子进程状态写入 `__stat_loc`  
+   调用 wait 函数的时候，如果没有已终止的子进程，那么程序将阻塞直到有子进程终止为止！谨慎使用！
 
 # Q&A
 1. 什么是进程（process）?
