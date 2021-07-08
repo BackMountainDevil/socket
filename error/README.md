@@ -36,6 +36,7 @@ Error: Connection creation failed: Connection refused
 - setsockopt  
     `int setsockopt (int __fd, int __level, int __optname, const void *__optval, socklen_t __optlen)`  
     定义在 <socket.h> 中，作用是设置套接字的某些选项的值。这一步骤不是必须的，只不过可以用来设置一些参数（缓冲区大小）和避免某些错误，如接口已经被占用。失败时返回 -1,成功返回 0  
+    需要注意的是，设置 接收缓冲区 要在 connect/listen 之前完成  
     __fd：要被设置的套接字的描述符  
     __level：选项的所在的协议层，设置套接字时该参数应为 SOL_SOCKET  
     __optname：要设置的参数的名称，SO_REUSEADDR 指的是允许复用地址，SO_REUSEPORT 代表允许复用端口  
