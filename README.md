@@ -1,68 +1,11 @@
 # socket
-基于 Linux 的 socket 编程。
-## 待改进部分（暂时不会整的部分）
-- 缓冲区大小中的读值问题
-- udp 傻等问题
+基于 C++ 的 socket 编程。目前仅有 Linux 版，Windows 版随后补上。
 
-## 最简单的 CS 通信
-使用`git checkout basic`签出对应版本的代码。首先运行服务器程序(server.cpp)，其会等待客户端(client.cpp)发起请求。然后运行客户端程序，客户端连接到服务器后，会收到服务器返回的数据，然后各自结束。
-
-[一个简单的Linux下的socket程序](http://c.biancheng.net/cpp/html/3030.html)
-
-## 向服务端发送并接收数据
-使用`git checkout basic2`签出对应版本的代码。
-在上一步的基础上增加了向服务端发生自定义数据的功能，然后服务端也增加了接收数据的功能，接收之后再将数据返回给客户端。
-
-scanf() 读取到空格时认为输入结束，考虑下 fgets() 或者 std::cin.getline()。gets() 已经被抛弃，不建议使用。
-```bash
-scanf("%s", buffer);
-fgets(buffer,fgets(buffer,BUF_SIZE,stdin);,stdin);    //  C: fgets() 会读取换行符'\n'，除非缓存区不够大
-std::cin.getline(buffer, BUF_SIZE); // C++
-```
-
-- [c语言gets()函数与它的替代者fgets()函数](https://www.cnblogs.com/qingergege/p/5925811.html)
-- [PAT B1009 error: ‘gets’ was not declared in this scope gets(s)之解决办法 一只小菜猪 2019-01-24](https://blog.csdn.net/qq_36525099/article/details/86631881)
-
-## 错误处理
-使用`git checkout basicError`签出对应版本的代码。
-- [Socket Programming in C/C++. 31 May, 2019](https://www.geeksforgeeks.org/socket-programming-cc/)
-- [C语言技术网 - 网络通信socket。- 码农有道](http://www.freecplus.net/0047ac4059b14d52bcc1d4df6ae8bb83.html)：错误处理比上一个多一个步骤：每次出错都会尝试关闭 socket
-- [inet_pton()和inet_ntop()函数详解. QvQ是惊喜不是哭泣 2017-02-28](https://blog.csdn.net/zyy617532750/article/details/58595700)
-- [C 库函数 - perror()](https://www.runoob.com/cprogramming/c-function-perror.html)
-- [C语言setsockopt()函数：设置socket状态](http://c.biancheng.net/cpp/html/374.html)
-
-## 迭代服务器端和客户端
-使用`git checkout basicCS`签出对应版本的代码。之前的版本不能实现持续连接，刚说完一句话就通话中断了。这里使用循环改进了一下代码，使得服务端一直保持运行状态（等待客户发起连接）直到被终止程序，而客户端方面则是不断的向服务端发起连接，将用户输入发到服务端再接收服务端返回的数据。
-
-需要注意的是，这里的“不中断连接”并非真正意义上的持续性连接，而是不断的连接-关闭-连接，往复循环的连接让用户以为自己是一直和服务端保持连接的。这版的程序支持多个客户端程序同时运行。当多个服务端同时运行的时候，并不会异常报错，而是都会监听端口，至于客户连接到的服务端到底是哪一个，随缘。
-
-- [实现迭代服务器端和客户端](http://c.biancheng.net/cpp/html/3039.html)
-
-## socket缓冲区以及阻塞模式
-
-- [socket缓冲区以及阻塞模式](http://c.biancheng.net/cpp/html/3040.html)
->   每个 socket 被创建后，都会分配两个缓冲区，输入缓冲区和输出缓冲区。   
-    write()/send() 并不立即向网络中传输数据，而是先将数据写入缓冲区中，再由TCP协议将数据从缓冲区发送到目标机器。一旦将数据写入到缓冲区，函数就可以成功返回，不管它们有没有到达目标机器，也不管它们何时被发送到网络，这些都是TCP协议负责的事情。  
-    TCP协议独立于 write()/send() 函数，数据有可能刚被写入缓冲区就发送到网络，也可能在缓冲区中不断积压，多次写入的数据被一次性发送到网络，这取决于当时的网络情况、当前线程是否空闲等诸多因素，不由程序员控制。  
-    read()/recv() 函数也是如此，也从输入缓冲区中读取数据，而不是直接从网络中读取。   
-    - 即使关闭套接字也会继续传送输出缓冲区中遗留的数据；  
-    - 关闭套接字将丢失输入缓冲区中的数据。
-
-阻塞模式主要是缓冲区大小有限、数据大小放不放的下、缓冲区有没有正在被使用（锁定）。
-1. 数据大小比缓冲区可用空间大一丢丢，阻塞等待可用空间足够且没有被锁定的时候才写入缓冲区；
-2. 数据大小远大于缓冲区大小，分批次写入；
-3. 缓冲区正在被使用（锁定-发送、写入）
-
-### 取得socket 状态 - 缓冲区大小
-通过 `getsockopt()` 中的第三个参数 `__optname` 可以获取到对于的参数值，下面是一个获取缓存区的例子。way 1 在我pc上获取到的值保持在 16384，而 way 2 获取到的值一直在 3.2k 左右变动，极少数的时候数值会突变（原因有待探究，类型转换？）
-
-```bash
-int optval;
-socklen_t tmp = sizeof(optval);
-getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, &tmp); // way 1
-// getsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&optval, (socklen_t *)sizeof(optval));  // way 2
-printf("Buffer length = %d\n", optval);
-```
+- [最简单的 CS 通信](./basic/README.md)：最基本的 Client - Server 通信程序
+- [出错处理与函数解析](./error/README.md)：对上一个程序进行出错处理，解释代码中的函数
+- [迭代回声 CS 通信](./loop/README.md)：让服务端、客户端保持运行
+- [优雅的断开连接](./elegantClose/README.md)：如何确保对方收到全部数据再关闭连接
+- [域名和 IP](./dns/README.md)：使用域名替代 IP
 
 ## [TCP的粘包问题以及数据的无边界性](http://c.biancheng.net/cpp/html/3041.html)
 数据的“粘包”问题：由于缓冲区和阻塞模式的存在，read 读取缓冲区的时候并不是说缓冲区一有数据就读取，而是阻塞等待到缓冲区快满了的时候才去读取缓冲区的数据（为了尽可能多的接收数据）。换句话说，我本来是分批次给你发消息，然而你以为我是连起来说的，或者认为我说话前言不搭后语。
@@ -82,18 +25,6 @@ Input a string: asd
 Message form server: asd
 ```
 
-## 文件传输
-使用`git checkout file`签出对应版本的代码。
-
-- [socket文件传输功能的实现](http://c.biancheng.net/cpp/html/3045.html)
-- [段错误 (核心已转储) + free(): double free detected in tcache 2 已放弃 (核心已转储). Kearney form An idea 2021-07-05](https://blog.csdn.net/weixin_43031092/article/details/118487981)
-
-## [使用域名替代 IP 地址](./getIP.cpp)
-为什么要这么做？文章说的是一旦IP地址变化（IP地址会经常变动），客户端软件就会出现错误。而域名续费就不会变，而域名的 IP 解析可以随时修改。
-
-- [在socket中使用域名](http://c.biancheng.net/cpp/html/3048.html)
-- [gethostbyname()函数详解.带鱼兄 2016-07-18](https://blog.csdn.net/daiyudong2020/article/details/51946080?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522162546433016780261960009%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=162546433016780261960009&biz_id=0)
-> gethostname可能存在性能瓶颈问题
 
 ## UDP
 UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇叭喊话，谁在线谁就会听到。
@@ -103,10 +34,6 @@ UPD 和 TCP 相比，省略去了建立连接的时间，类似与拿着大喇�
 - [基于UDP的服务器端和客户端](http://c.biancheng.net/cpp/html/3052.html)
 - [Linux C/C++ UDP Socket通信实例](https://www.cnblogs.com/zkfopen/p/9382705.html)
 
-## CS TCP 一对一自由交流
-使用`git checkout talkCS`签出对应版本的代码。在理解完 socket 通信基本原理之后，这个实现起来就很简单了，CS 两端都不关闭连接直到某一方关闭连接，这样双方都能持续不断的交流，需要注意的是关闭 socket 前应用 shutdown 关闭输出流，直到输出流发完才关闭 socket。
-
-目前存在的问题有沟通不同步，会存在异步和丢失的情况。
 
 ## 聊天室 CSC
 在多客户聊天室中，服务端作为消息的转发者，接受来自不同客户的消息，随后将消息转发至对应的客户。为了达到这一目的，服务端需要存储所有客户端的连接和标识。
