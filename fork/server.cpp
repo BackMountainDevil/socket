@@ -99,24 +99,27 @@ int main() {
       continue;
     } else if (pid == 0) { // 子进程
       close(serv_sock);
-      // 读取客户端发来的信息，然后返回数据
-      char bufSend[BUF_SIZE];
-      int recv_num = read(clnt_sock, bufSend, sizeof(bufSend));
-      if (recv_num < 0) {
-        perror("Error: Receive fail");
-        close(clnt_sock);
-        exit(EXIT_FAILURE);
-      } else {
-        std::cout << "Recv " << recv_num << " bytes: " << bufSend
-                  << " . From IP " << inet_ntoa(clnt_addr.sin_addr)
-                  << " , Port " << ntohs(clnt_addr.sin_port) << std::endl;
+      while (true) {
+        // 读取客户端发来的信息，然后返回数据
+        char bufSend[BUF_SIZE];
+        int recv_num = read(clnt_sock, bufSend, sizeof(bufSend));
+        if (recv_num < 0) {
+          perror("Error: Receive fail");
+          close(clnt_sock);
+          exit(EXIT_FAILURE);
+        } else {
+          std::cout << "Recv " << recv_num << " bytes: " << bufSend
+                    << " . From IP " << inet_ntoa(clnt_addr.sin_addr)
+                    << " , Port " << ntohs(clnt_addr.sin_port) << std::endl;
+        }
+
+        if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
+          perror("Error: Send fail\n");
+          close(clnt_sock);
+          exit(EXIT_FAILURE);
+        }
       }
 
-      if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
-        perror("Error: Send fail\n");
-        close(clnt_sock);
-        exit(EXIT_FAILURE);
-      }
       close(clnt_sock);
       return EXIT_SUCCESS;
     } else { // 父进程

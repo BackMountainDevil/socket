@@ -212,28 +212,31 @@ $ make cs
 # 运行服务端，然后打开其它终端
 $ ./server 
 Waiting for connecting
-New client：4 , IP 127.0.0.1 , Port 39642
-New client：4 , IP 127.0.0.1 , Port 39644
-New client：4 , IP 127.0.0.1 , Port 39646
-Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 39642
-New client：4 , IP Child proc 80798 normal terminated, return  0
-127.0.0.1 , Port 39648
-Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 39644
-New client：4 , IP Child proc 80818 normal terminated, return  0
-127.0.0.1 , Port 39650
-Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 39646
-New client：4 , IP 127.0.0.1 , Port 39652
-Child proc 80843 normal terminated, return  0
-Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39648
-Child proc 80847 normal terminated, return  0
+New client：4 , IP 127.0.0.1 , Port 53870
+New client：4 , IP 127.0.0.1 , Port 53872
+New client：4 , IP 127.0.0.1 , Port 53874
+Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 53870
+Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 53872
+Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 53874
+Recv 1025 bytes: c33 . From IP 127.0.0.1 , Port 53874
+Recv 1025 bytes: c22 . From IP 127.0.0.1 , Port 53872
+Recv 1025 bytes: c11 . From IP 127.0.0.1 , Port 53870
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 53870
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53870
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53870
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53870
 Accept: Interrupted system call
-Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39650
-Child proc 80854 normal terminated, return  0
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 53872
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53872
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53872
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53872
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53872
 Accept: Interrupted system call
-Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 39652
-Child proc 80865 normal terminated, return  0
+Recv 1025 bytes: \q . From IP 127.0.0.1 , Port 53874
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53874
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53874
+Recv 0 bytes: \q . From IP 127.0.0.1 , Port 53874
 Accept: Interrupted system call
-
 ```
 
 服务端会发生错误 `Accept: Interrupted system call` ，代码中对此错误不是退出而是继续运行，不然服务端就没法继续接受客户端了。  
@@ -248,6 +251,8 @@ Accept: Interrupted system call
 $ ./client 
 Input: c1
 Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 8080
+Input: c11
+Recv 1025 bytes: c11 . From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
@@ -256,6 +261,8 @@ Client close
 $ ./client 
 Input: c2
 Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 8080
+Input: c22
+Recv 1025 bytes: c22 . From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
@@ -264,6 +271,8 @@ Client close
 $ ./client 
 Input: c3
 Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 8080
+Input: c33
+Recv 1025 bytes: c33 . From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
@@ -271,14 +280,14 @@ Client close
 # 查看线程，可以看到服务端程序实现了进程并发
 $ ps au
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-kearney    80785  0.0  0.0   5992  3472 pts/2    S+   23:16   0:00 ./server
-kearney    80797  0.0  0.0   5992  3504 pts/10   S+   23:16   0:00 ./client
-kearney    80817  0.0  0.0   5992  3576 pts/11   S+   23:16   0:00 ./client
-kearney    80842  0.0  0.0   5992  3500 pts/5    S+   23:16   0:00 ./client
-kearney    80847  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
-kearney    80854  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
-kearney    80865  0.0  0.0   5992   220 pts/2    S+   23:16   0:00 ./server
-kearney    80892  0.0  0.0  13336  3428 pts/9    R+   23:17   0:00 ps au
+kearney     7211  0.0  0.0   5992  3484 pts/1    S+   08:38   0:00 ./server
+kearney     7226  0.0  0.0   5992  3608 pts/2    S+   08:38   0:00 ./client
+kearney     7227  0.0  0.0   5992   224 pts/1    S+   08:38   0:00 ./server
+kearney     7237  0.0  0.0   5992  3616 pts/3    S+   08:38   0:00 ./client
+kearney     7238  0.0  0.0   5992   224 pts/1    S+   08:38   0:00 ./server
+kearney     7265  0.0  0.0   5992  3612 pts/4    S+   08:38   0:00 ./client
+kearney     7266  0.0  0.0   5992   224 pts/1    S+   08:38   0:00 ./server
+kearney     7336  0.0  0.0  13336  3488 pts/5    R+   08:39   0:00 ps au
 ```
 </details>
 

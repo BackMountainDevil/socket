@@ -31,20 +31,20 @@ int main() {
   char bufSend[BUF_SIZE] = {0};
   char bufRecv[BUF_SIZE] = {0};
 
-  while (true) {
-    // 创建套接字
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-      perror("Error: Socket creation failed");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      perror("Error: Connection creation failed");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
+  // 创建套接字
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("Error: Socket creation failed");
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("Error: Connection creation failed");
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
 
+  while (true) {
     // 获取用户输入的字符串并发送给服务端
     std::cout << "Input: ";
     std::cin.getline(bufSend, BUF_SIZE);
@@ -59,7 +59,6 @@ int main() {
       shutdown(sock, SHUT_WR);
       printf("Log: Output close\n");
       read(sock, bufRecv, sizeof(bufRecv));
-      close(sock);
       break;
     }
 
@@ -73,11 +72,12 @@ int main() {
     std::cout << "Recv " << recv_num << " bytes: " << bufRecv << " . From IP "
               << inet_ntoa(serv_addr.sin_addr) << " , Port "
               << ntohs(serv_addr.sin_port) << std::endl;
-    close(sock);
+
     // 重置缓冲区
     memset(bufSend, 0, BUF_SIZE);
     memset(bufRecv, 0, BUF_SIZE);
   }
+  close(sock);
   printf("Client close\n");
   return 0;
 }
