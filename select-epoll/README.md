@@ -42,15 +42,15 @@ FD_ISSET(fd, fdsetp)
 
     这是因为调用 select 后，结构体 timeval 的属性值都会被替换为超时前生于时间，比如超时时间是 10 s ，还有 2s 即将超时，如果此时触发了，那么超时时间将会被更新为 2s,而不是我们设置的初始值了，因此我们需要重新设置这个超时时间。
 
-### server.cpp
-- server.cpp:基于 select 的 I/O 复用服务端
+### server-select.cpp
+- server-select.cpp:基于 select 的 I/O 复用服务端
 - client.cpp：回声客户端
 
 <details>
 <summary>点击展开运行案例</summary>
 
 ```bash
-$ ./server 
+$ ./server-select
 Waiting for connecting
 New client：4 , IP 127.0.0.1 , Port 47056
 New client：5 , IP 127.0.0.1 , Port 47058
