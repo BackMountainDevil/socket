@@ -32,7 +32,6 @@ New client：4 , IP 127.0.0.1 , Port 41344
 New client：4 , IP 127.0.0.1 , Port 41346
 4：ddas
 New client：4 , IP 127.0.0.1 , Port 41348
-4：\q
 New client：4 , IP 127.0.0.1 , Port 41350
 4：ewf
 
@@ -47,7 +46,6 @@ Recv 1025 bytes: 2 sd from IP 127.0.0.1 , Port 8080
 Input:   asd 22e
 Recv 1025 bytes:   asd 22e from IP 127.0.0.1 , Port 8080
 Input: \q
-Log: Output close
 Client close
 
 $ ./client 
@@ -64,7 +62,6 @@ Recv 1025 bytes: asd from IP 127.0.0.1 , Port 8080
 Input:  adss
 Recv 1025 bytes:  adss from IP 127.0.0.1 , Port 8080
 Input: \q
-Log: Output close
 Client close
 ```
 

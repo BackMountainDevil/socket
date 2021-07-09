@@ -40,17 +40,15 @@ int main() {
     // 获取用户输入的字符串并发送给服务端
     std::cout << "Input: ";
     std::cin.getline(bufSend, BUF_SIZE);
-    if (write(sock, bufSend, sizeof(bufSend)) < 0) {
+    if (!strcmp(bufSend, "\\q")) { // 输入 ‘\q’ ,逐步终止程序
+      shutdown(sock, SHUT_WR);
+      printf("Log: Output close\n");
+      read(sock, bufRecv, sizeof(bufRecv));
+      break;
+    } else if (write(sock, bufSend, sizeof(bufSend)) < 0) { // 发送数据
       perror("Error: Send fail\n");
       close(sock);
       exit(EXIT_FAILURE);
-    }
-
-    // 输入 ‘\q’ ,逐步终止程序
-    if (!strcmp(bufSend, "\\q")) {
-      close(sock);
-      printf("Log: Output close\n");
-      break;
     }
 
     // 读取服务器传回的数据
