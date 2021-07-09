@@ -9,6 +9,5 @@
 - [UDP 迭代回声 CS 通信](./udp/README.md)：将 TCP 改为 UDP
 - [Nagle 算法](./nagle/README.md)：是什么，干啥的
 - [多进程服务端](./fork/README.md)：改进迭代回声服务端，使其可以同时支持多个客户端
-- [I/O 复用服务端](./select-epoll/README.md)
+- [I/O 复用服务端](./select-epoll/README.md)：使用复用技术改进回声客户端
 - [多线程服务端](./thread/README.md)
-
