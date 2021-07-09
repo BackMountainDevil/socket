@@ -42,6 +42,53 @@ FD_ISSET(fd, fdsetp)
 
     这是因为调用 select 后，结构体 timeval 的属性值都会被替换为超时前生于时间，比如超时时间是 10 s ，还有 2s 即将超时，如果此时触发了，那么超时时间将会被更新为 2s,而不是我们设置的初始值了，因此我们需要重新设置这个超时时间。
 
+### server.cpp
+- server.cpp:基于 select 的 I/O 复用服务端
+- client.cpp：回声客户端
+
+<details>
+<summary>点击展开运行案例</summary>
+
+```bash
+$ ./server 
+Waiting for connecting
+New client：4 , IP 127.0.0.1 , Port 47056
+New client：5 , IP 127.0.0.1 , Port 47058
+New client：6 , IP 127.0.0.1 , Port 47060
+Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 47060
+Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 47060
+Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 47060
+Client 6 disconnect. IP 127.0.0.1 , Port 47060
+Client 5 disconnect. IP 127.0.0.1 , Port 47060
+Client 4 disconnect. IP 127.0.0.1 , Port 47060
+
+# 下面是三个同时在线的客户端
+$ ./client 
+Input: c1
+Recv 1025 bytes: c1 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+$ ./client 
+Input: c2
+Recv 1025 bytes: c2 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+$ ./client 
+Input: \q
+Log: Output close
+Client close
+[kearney@arch select-epoll]$ ./client 
+Input: c3
+Recv 1025 bytes: c3 . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+```
+</details>
 
 ## 函数注解  
 - select  
