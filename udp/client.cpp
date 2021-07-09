@@ -32,30 +32,29 @@ int main() {
   char bufSend[BUF_SIZE] = {0};
   char bufRecv[BUF_SIZE] = {0};
 
-  while (true) {
-    // 创建套接字，第二个参数指定为 UDP
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-      perror("Error: Socket creation failed");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
+  // 创建套接字，第二个参数指定为 UDP
+  int sock = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sock < 0) {
+    perror("Error: Socket creation failed");
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
 
+  while (true) {
     // 获取用户输入的字符串并发送给服务端
     std::cout << "Input: ";
     std::cin.getline(bufSend, BUF_SIZE);
-    int send_num = sendto(sock, bufSend, strlen(bufSend), 0,
-                          (struct sockaddr *)&serv_addr, len);
-    if (send_num < 0) {
-      perror("Sendto error:");
-      close(sock);
-      exit(EXIT_FAILURE);
-    }
     // 输入如果是 ‘\q’ ,逐步终止程序
     if (!strcmp(bufSend, "\\q")) {
-      close(sock);
-      printf("Log: Output close\n");
       break;
+    } else {
+      int send_num = sendto(sock, bufSend, strlen(bufSend), 0,
+                            (struct sockaddr *)&serv_addr, len);
+      if (send_num < 0) {
+        perror("Sendto error:");
+        close(sock);
+        exit(EXIT_FAILURE);
+      }
     }
 
     // 读取服务器传回的数据
@@ -63,7 +62,7 @@ int main() {
                             (struct sockaddr *)&serv_addr, (socklen_t *)&len);
 
     if (recv_num < 0) {
-      perror("Recvfrom error:");
+      perror("Recvfrom error");
       close(sock);
       exit(EXIT_FAILURE);
     }
@@ -71,12 +70,12 @@ int main() {
               << inet_ntoa(serv_addr.sin_addr) << " , Port "
               << ntohs(serv_addr.sin_port) << std::endl;
 
-    close(sock);
     // 重置缓冲区
     memset(bufSend, 0, BUF_SIZE);
     memset(bufRecv, 0, BUF_SIZE);
   }
 
+  close(sock);
   printf("Client close\n");
   return 0;
 }
