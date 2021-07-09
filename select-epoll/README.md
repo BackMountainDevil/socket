@@ -109,3 +109,34 @@ Client close
     这是因为每次都要循环一遍才知道到底是哪个监视对象，还有每次都要重新传递监视对象。第一感觉前者很浪费时间，但是实际上后者负担更大，把监视对象传递给操作系统可不容易，而且无法通过代码优化。套接字是由操作系统管理的，所以避免不了和操作系统打交道。
 
 可不可以只向操作系统传递一次监视对象，然后当对象发生变化时再通知呢？既然这个问题存在那么多年了，肯定是可以的，Linux 下的方案是 epoll, Widnows 下是 IOCP
+
+# epoll
+- [深入理解 Epoll .Dreamgoing](https://zhuanlan.zhihu.com/p/93609693)
+
+## 优点
+- 不需要每次循环一遍来查找是哪个小宝贝触发了
+- 不需要每次传递监视对象的信息
+## 程序
+- [server-epoll.cpp](server-epoll.cpp): 基于 epoll 的 I/O 复用服务端  
+回声客户端程序还是[client.cpp](client.cpp)
+
+## 结构体与函数
+- epoll_create    
+    `int epoll_create (int __size)`  
+    定义在 <sys/epoll.h> 中，作用是创建 epoll 对像，返回其描述符。需要注意这个描述符最后记得用 close() 来释放它  
+
+- epoll_ctl  
+    `int epoll_ctl (int __epfd, int __op, int __fd, struct epoll_event *__event)`  
+    定义在 <sys/epoll.h> 中，作用是对监听对象进行设置，如添加、删除。错误返回 -1，成功返回 0  
+    __epfd：由 epoll_create 创建的 epoll 对像的描述符  
+    __op：操作类型，有 EPOLL_CTL_ADD、EPOLL_CTL_DEL、EPOLL_CTL_MOD 三种  
+    __fd：需要监听的对象描述符  
+    *__event：监听的事件类型
+
+- epoll_wait  
+    `int epoll_wait (int __epfd, struct epoll_event *__events, int __maxevents, int __timeout)`  
+    定义在 <sys/epoll.h> 中，作用是阻塞等待监听对象被触发，错误返回 -1  
+    __timeout：超时时间/ms，设置为 -1 表示无限等待
+
+# Q&A
+1. select 支持最多多少个客户？如何测试？
