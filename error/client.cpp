@@ -25,7 +25,7 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
     perror("Error: Connection creation failed");
     close(sock);
     exit(EXIT_FAILURE);
@@ -36,7 +36,7 @@ int main() {
   //读取服务器传回的数据
   char bufRecv[BUF_SIZE];
 
-  if (read(sock, bufRecv, sizeof(bufRecv)) < 0) {
+  if (read(sock, bufRecv, sizeof(bufRecv)) == -1) {
     perror("Error: Receive fail");
     close(sock);
     exit(EXIT_FAILURE);

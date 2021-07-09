@@ -61,7 +61,7 @@ int main() {
   // 向客户端发送数据
   char bufSend[BUF_SIZE];
   strcpy(bufSend, "This is server speaking!");
-  if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
+  if (write(clnt_sock, bufSend, sizeof(bufSend)) == -1) {
     perror("Error: Send fail\n");
     close(serv_sock);
     exit(EXIT_FAILURE);
