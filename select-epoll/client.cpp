@@ -54,7 +54,7 @@ int main() {
       printf("Log: Output close\n");
       read(sock, bufRecv, sizeof(bufRecv));
       break;
-    } else if (write(sock, bufSend, sizeof(bufSend)) < 0) { // 发生数据
+    } else if (write(sock, bufSend, sizeof(bufSend)) < 0) { // 发送数据
       perror("Error: Send fail\n");
       close(sock);
       exit(EXIT_FAILURE);
