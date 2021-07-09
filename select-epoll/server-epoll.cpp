@@ -62,7 +62,6 @@ int main() {
   struct epoll_event ep_events[EPOLL_SIZE];
   struct epoll_event event;
   int epfd = epoll_create(EPOLL_SIZE);
-  //   ep_events = malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
   int event_cnt;
 
   event.events = EPOLLIN;    // 监听时间类型
@@ -77,6 +76,7 @@ int main() {
       perror("epoll_wait error");
       break;
     }
+    puts("epoll_wait awake"); // 演示触发类型用的
 
     for (int i = 0; i < event_cnt; i++) {
       if (ep_events[i].data.fd == serv_sock) { // 如果是主套接字
@@ -91,7 +91,8 @@ int main() {
                     << ntohs(clnt_addr.sin_port) << std::endl;
 
           // 将客户端套接字加入监听组 ‘有数据待读取’
-          event.events = EPOLLIN;
+          // event.events = EPOLLIN | EPOLLET; // 边缘触发
+          event.events = EPOLLIN; // 默认条件触发
           event.data.fd = clnt_sock;
           epoll_ctl(epfd, EPOLL_CTL_ADD, clnt_sock, &event);
         }

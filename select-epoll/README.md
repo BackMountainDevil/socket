@@ -120,6 +120,77 @@ Client close
 - [server-epoll.cpp](server-epoll.cpp): 基于 epoll 的 I/O 复用服务端  
 回声客户端程序还是[client.cpp](client.cpp)
 
+## 条件触发和边缘触发
+条件触发：只要输入缓冲区中还剩有数据，就会再次触发事件，select 和 epoll 默认都是条件触发方式  
+边缘触发：输入缓冲区收到数据时仅注册一次事件，即使输入缓冲区还有数据也不会再次触发事件  
+
+如果要修改 epoll 为边缘触发方式，修改一下操作类型即可 - `event.events = EPOLLIN | EPOLLET;`  
+<details>
+<summary>点击展开运行案例</summary>
+
+为了更加明显的观察的条件触发的效果，最好将服务端的缓冲区改小一点，客户端的缓冲区也适当改小。下面是的案例中服务端、客户端的 `BUF_SIZE` 分别是 4、10。也就是说客户端发来一次长度为 10 B的数据时，服务端因为缓冲区收到数据就会被触发（代码第 75 行），然后调用一次 read 读取缓冲区（代码第 101 行），然而一次读取的最多只有 4 B，然后这个子程序就执行完了，这里并没有使用循环读取到没有数据为止，然后由于采用了条件触发，缓冲区还有数据没有读出来，于是再次被触发继续读取 4 B,然后还没有读完，再触发读取完剩下的 2 B。如果采取边缘触发的话，第一次读取完 4 B就完了，不会再次触发。
+
+```bash
+# 条件触发案例，服务端、客户端的 `BUF_SIZE` 分别修改为 4、10
+$ ./server-epoll 
+Waiting for connecting
+epoll_wait awake
+New client：5 , IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 4 bytes: 1234 . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 4 bytes: 567 . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 2 bytes:  . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 4 bytes: 123  . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 4 bytes: 567  . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Recv 2 bytes: 9 . From IP 127.0.0.1 , Port 51940
+epoll_wait awake
+Client 5 disconnect. IP 127.0.0.1 , Port 51940
+
+$ ./client 
+Input: 1234567
+Recv 8 bytes: 1234567 . From IP 127.0.0.1 , Port 8080
+Input: 123 567 9
+Recv 4 bytes:  . From IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+# 边缘触发案例，注释代码 95 行，取消 94 行的注释，S、C缓冲区大小分别是 4、10
+# 可以看到这样子数据接收并不是我们想要的模样，虽然看起来都收到了，看不到的在缓冲区里
+# 疑点：1. 客户端一上来就输入“\q”才会在服务端看到 disconnet,如果和服务端说了话在退出就不会看到 disconect
+# 2. 客户端输入“123456789”时还正常运行，如果输入“1234567890”就会陷入疯狂输出的异常状态
+$ ./server-epoll 
+Waiting for connecting
+epoll_wait awake    # 主套接字触发
+New client：5 , IP 127.0.0.1 , Port 53144
+epoll_wait awake    # 第一次客户端消息触发
+Recv 4 bytes: 1234 . From IP 127.0.0.1 , Port 53144
+epoll_wait awake     # 第二次客户端消息触发
+Recv 4 bytes: 567 . From IP 127.0.0.1 , Port 53144
+epoll_wait awake    # 客户端断开触发
+Recv 4 bytes:  . From IP 127.0.0.1 , Port 53144
+
+$ ./client 
+Input: 12234567
+Recv 4 bytes: 1223 . From IP 127.0.0.1 , Port 8080
+Input: 123 567 9
+Recv 4 bytes: 4567 . From IP 127.0.0.1 , Port 8080
+Input:  \q
+Log: Output close
+Client close
+```
+</details>
+
+但是条件触发、边缘触发之间并不说谁绝对的优，而是需要看情况而定，边缘触发它可以分离接收数据和处理数据的时间点，而条件触发想要实现这一点要花费很大成本（触发事件会疯狂冒出来），所以没有人会用条件触发干这种事情，这时候采取边缘触发它不香吗。
+
+实现边缘触发的回声服务器也是可以的，循环读取缓冲区直到缓冲区中没有数据为止，此外，还应该把套接字修改为非阻塞模式，因为边缘触发方式下，以阻塞方式工作的 read/write 可能引起服务端长时间阻塞无响应，边缘触发中务必采用非阻塞的 read/write 
+
+
 ## 结构体与函数
 - epoll_create    
     `int epoll_create (int __size)`  
