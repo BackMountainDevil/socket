@@ -32,7 +32,7 @@ int main() {
   int opt = 1;
   if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
                  sizeof(opt))) {
-    perror("Setsockopt:端口/地址 已经被占用");
+    perror("Setsockopt: 设置 地址/端口 可复用失败");
     close(serv_sock);
     exit(EXIT_FAILURE);
   }
