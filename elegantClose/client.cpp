@@ -70,7 +70,7 @@ int main() {
             << optr << std::endl;
 
   std::cout << "Trying to connect server" << std::endl;
-  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
     perror("Error: Connection creation failed");
     close(sock);
     exit(EXIT_FAILURE);
@@ -88,7 +88,7 @@ int main() {
 
   sleep(3); // 模拟延迟收到，可以看到服务端是真的在等待客户端的回应
   strcpy(bufSend, "I have recv the data,Thank you");
-  if (write(sock, bufSend, sizeof(bufSend)) < 0) {
+  if (write(sock, bufSend, sizeof(bufSend)) == -1) {
     perror("Error: Send fail\n");
     close(sock);
     exit(EXIT_FAILURE);

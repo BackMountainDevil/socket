@@ -57,8 +57,8 @@ int main() {
 
   opt = 1;
   if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                 sizeof(opt))) {
-    perror("Setsockopt:端口/地址 已经被占用");
+                 sizeof(opt)) == -1) {
+    perror("Setsockopt: 设置 地址/端口 可复用失败");
     close(serv_sock);
     exit(EXIT_FAILURE);
   }
@@ -117,7 +117,7 @@ int main() {
   std::cout << "Output stream close " << std::endl;
 
   // 阻塞，等待客户端接收完毕
-  if (read(clnt_sock, bufRecv, sizeof(bufSend)) < 0) {
+  if (read(clnt_sock, bufRecv, sizeof(bufSend)) == -1) {
     perror("Error: Receive fail");
     close(clnt_sock);
     close(serv_sock);
