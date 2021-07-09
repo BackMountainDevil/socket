@@ -52,7 +52,7 @@ int main() {
                  (struct sockaddr *)&clnt_addr, (socklen_t *)&clnt_addr_size);
 
     if (recv_num < 0) {
-      perror("Recvfrom error:");
+      perror("Recvfrom error");
       close(serv_sock);
       exit(1);
     }
@@ -64,7 +64,7 @@ int main() {
     int send_num = sendto(serv_sock, bufSend, recv_num, 0,
                           (struct sockaddr *)&clnt_addr, clnt_addr_size);
     if (send_num < 0) {
-      perror("Sendto error:");
+      perror("Sendto error");
       close(serv_sock);
       exit(1);
     }
