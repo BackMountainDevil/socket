@@ -126,7 +126,7 @@ Client close
 
 如果要修改 epoll 为边缘触发方式，修改一下操作类型即可 - `event.events = EPOLLIN | EPOLLET;`  
 <details>
-<summary>点击展开运行案例</summary>
+<summary>点击展开 条件触发和边缘触发 案例</summary>
 
 为了更加明显的观察的条件触发的效果，最好将服务端的缓冲区改小一点，客户端的缓冲区也适当改小。下面是的案例中服务端、客户端的 `BUF_SIZE` 分别是 4、10。也就是说客户端发来一次长度为 10 B的数据时，服务端因为缓冲区收到数据就会被触发（代码第 75 行），然后调用一次 read 读取缓冲区（代码第 101 行），然而一次读取的最多只有 4 B，然后这个子程序就执行完了，这里并没有使用循环读取到没有数据为止，然后由于采用了条件触发，缓冲区还有数据没有读出来，于是再次被触发继续读取 4 B,然后还没有读完，再触发读取完剩下的 2 B。如果采取边缘触发的话，第一次读取完 4 B就完了，不会再次触发。
 
@@ -190,6 +190,73 @@ Client close
 
 实现边缘触发的回声服务器也是可以的，循环读取缓冲区直到缓冲区中没有数据为止，此外，还应该把套接字修改为非阻塞模式，因为边缘触发方式下，以阻塞方式工作的 read/write 可能引起服务端长时间阻塞无响应，边缘触发中务必采用非阻塞的 read/write 
 
+设置 socket 为非阻塞需要使用 <fcntl.h> 中的 `fcntl` 函数，具体两行操作看代码。  
+
+- [server-epollet.cpp](server-epollet.cpp): 边缘触发的 epoll 回声服务器
+
+- errno  
+    Linux 定义在 <errno.h> 中的全局变量，可用它获取错误的额外信息
+
+<details>
+<summary>点击展开 边缘触发回声服务器 案例</summary>
+
+TO DO：客户端退出的时候，服务端疯狂报错 Error: Receive fail: Bad file descriptor
+```bash
+$ ./server-epollet 
+Waiting for connecting
+epoll_wait awake
+New client：5 , IP 127.0.0.1 , Port 54562
+epoll_wait awake
+Recv 4 bytes: 123 . From IP 127.0.0.1 , Port 54562
+Recv 4 bytes:  . From IP 127.0.0.1 , Port 54562
+Recv 2 bytes:  . From IP 127.0.0.1 , Port 54562
+Error: Receive fail: Resource temporarily unavailable
+没有数据可以读了
+epoll_wait awake
+Recv 4 bytes: 123  . From IP 127.0.0.1 , Port 54562
+Recv 4 bytes: 56 8 . From IP 127.0.0.1 , Port 54562
+Recv 2 bytes: 9 . From IP 127.0.0.1 , Port 54562
+Error: Receive fail: Resource temporarily unavailable
+没有数据可以读了
+epoll_wait awake
+New client：6 , IP 127.0.0.1 , Port 54570
+epoll_wait awake
+Recv 4 bytes: 123 . From IP 127.0.0.1 , Port 54570
+Recv 4 bytes:  . From IP 127.0.0.1 , Port 54570
+Recv 2 bytes:  . From IP 127.0.0.1 , Port 54570
+Error: Receive fail: Resource temporarily unavailable
+没有数据可以读了
+epoll_wait awake
+Recv 4 bytes: 8 65 . From IP 127.0.0.1 , Port 54570
+Recv 4 bytes: 4 32 . From IP 127.0.0.1 , Port 54570
+Recv 2 bytes: 1 . From IP 127.0.0.1 , Port 54570
+Error: Receive fail: Resource temporarily unavailable
+没有数据可以读了
+
+$ ./client 
+Input: \q
+Log: Output close
+Client close
+[kearney@arch select-epoll]$ ./client 
+Input: 123
+Recv 8 bytes: 123 . From IP 127.0.0.1 , Port 8080
+Input: 123 56 89
+Recv 4 bytes:  . From IP 127.0.0.1 , Port 8080
+Input: 
+
+$ ./client 
+Input: \q
+Log: Output close
+Client close
+[kearney@arch select-epoll]$ ^C
+[kearney@arch select-epoll]$ ./client 
+Input: 123
+Recv 4 bytes: 123 . From IP 127.0.0.1 , Port 8080
+Input: 8 654 321
+Recv 8 bytes:  . From IP 127.0.0.1 , Port 8080
+Input: 
+```
+</details>
 
 ## 结构体与函数
 - epoll_create    
