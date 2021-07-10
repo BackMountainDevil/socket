@@ -99,14 +99,17 @@ int main() {
       continue;
     } else if (pid == 0) { // 子进程
       close(serv_sock);
+      char bufSend[BUF_SIZE];
       while (true) {
         // 读取客户端发来的信息，然后返回数据
-        char bufSend[BUF_SIZE];
         int recv_num = read(clnt_sock, bufSend, sizeof(bufSend));
         if (recv_num < 0) {
           perror("Error: Receive fail");
           close(clnt_sock);
           exit(EXIT_FAILURE);
+        } else if (recv_num == 0) {
+          close(clnt_sock);
+          std::cout << "Client " << clnt_sock << " disconnect" << std::endl;
         } else {
           std::cout << "Recv " << recv_num << " bytes: " << bufSend
                     << " . From IP " << inet_ntoa(clnt_addr.sin_addr)

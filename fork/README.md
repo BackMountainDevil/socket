@@ -301,7 +301,47 @@ kearney     7336  0.0  0.0  13336  3488 pts/5    R+   08:39   0:00 ps au
 
 那咋不举一个好点的例子呢？？这里以客户端的 I/O 分割为例子。
 
-// TO DO, not done yet
+<details>
+<summary>点击查看运行案例 </summary>
+
+```bash
+$ ./server 
+Waiting for connecting
+New client：4 , IP 127.0.0.1 , Port 53660
+New client：4 , IP 127.0.0.1 , Port 53662
+Recv 1025 bytes: hello . From IP 127.0.0.1 , Port 53660
+Recv 1025 bytes: hi . From IP 127.0.0.1 , Port 53662
+Recv 1025 bytes: it is fine . From IP 127.0.0.1 , Port 53662
+Recv 1025 bytes: why not . From IP 127.0.0.1 , Port 53660
+Client 4 disconnect
+Error: Send fail: Bad file descriptor
+Child proc 2226 normal terminated, return  1
+Accept: Interrupted system call
+Client 4 disconnect
+Error: Send fail: Bad file descriptor
+Child proc 2229 normal terminated, return  1
+Accept: Interrupted system call
+
+# 两个同时在线的客户端
+$ ./mpclient 
+hello
+Recv 1025 bytes: hello
+why not
+Recv 1025 bytes: why not
+\q
+Client close
+Client close
+
+$ ./mpclient 
+hi
+Recv 1025 bytes: hi
+it is fine
+Recv 1025 bytes: it is fine
+\q
+Client close
+Client close
+```
+</details>
 
 ## 函数解析
 - getpid  
