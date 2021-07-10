@@ -70,7 +70,7 @@ int main() {
     }
     std::cout << clnt_sock << "：" << bufSend << std::endl;
     if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
-      perror("Error: Send fail\n");
+      perror("Error: Send fail");
       break;
     }
 

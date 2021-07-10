@@ -114,7 +114,7 @@ int main() {
         }
 
         if (write(clnt_sock, bufSend, sizeof(bufSend)) < 0) {
-          perror("Error: Send fail\n");
+          perror("Error: Send fail");
           close(clnt_sock);
           exit(EXIT_FAILURE);
         }

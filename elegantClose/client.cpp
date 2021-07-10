@@ -89,7 +89,7 @@ int main() {
   sleep(3); // 模拟延迟收到，可以看到服务端是真的在等待客户端的回应
   strcpy(bufSend, "I have recv the data,Thank you");
   if (write(sock, bufSend, sizeof(bufSend)) == -1) {
-    perror("Error: Send fail\n");
+    perror("Error: Send fail");
     close(sock);
     exit(EXIT_FAILURE);
   }

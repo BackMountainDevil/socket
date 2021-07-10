@@ -55,7 +55,7 @@ int main() {
       read(sock, bufRecv, sizeof(bufRecv));
       break;
     } else if (write(sock, bufSend, sizeof(bufSend)) == -1) { // 发送数据
-      perror("Error: Send fail\n");
+      perror("Error: Send fail");
       close(sock);
       exit(EXIT_FAILURE);
     }
