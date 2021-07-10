@@ -10,4 +10,4 @@
 - [Nagle 算法](./nagle/README.md)：是什么，干啥的
 - [多进程服务端](./fork/README.md)：改进迭代回声服务端，使其可以同时支持多个客户端
 - [I/O 复用服务端](./select-epoll/README.md)：使用复用技术改进回声服务端
-- [多线程服务端](./thread/README.md)
+- [多线程服务端](./thread/README.md)：多线程实现回声服务端、客户端

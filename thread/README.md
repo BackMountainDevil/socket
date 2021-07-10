@@ -104,6 +104,7 @@ The num : 0
 ## 回声服务程序
 - [server-thread.cpp](server-thread.cpp)：多线程回声服务端  
 - [client.cpp](client.cpp):普通回声客户端  
+- [client-thread.cpp](client-thread.cpp)：多线程 I/O 分离 回声客户端  
 
 在之前的程序中，为了支持同时服务多个客户，用了各种办法保持套接字，集中管理，如 select 中的 fd_set。这里用 clnt_socks[CLIENTMAX] 保存客户端的全部套接字，用 clnt_cnt 保持在线客户数，这两个就是临界资源，在对临界资源进行操作的时候需要加锁、解锁。
 
@@ -154,5 +155,62 @@ Recv 1025 bytes: c66. From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
+```
+</details>
+
+<details>
+<summary>点击查看 多线程回声服务端与多线程 I/O 分离 回声客户端运行案例 </summary>
+
+客户端使用多线程进行 I/O 分离之后，"Input: "的输出有点不对劲，因此把它注释掉了（代码第 19 行），服务端收到并成功回声，奇怪的地方在于在于客户下线的时候不是每次都会提示。
+
+```bash
+$ make cs
+
+$ ./server-thread 
+Waiting for connecting
+New client：4 , IP 127.0.0.1 , Port 43926
+New client：5 , IP 127.0.0.1 , Port 43928
+New client：6 , IP 127.0.0.1 , Port 43930
+4 : c4
+5 : c5
+6 : c6
+6 : c66
+5 : c55
+4 : c44
+Client 4 disconnect
+
+# 三个并行的客户端
+$ ./client-thread 
+c4
+Recv 100 bytes: c4
+c44
+Recv 100 bytes: c44
+\q
+Log: Output close
+Recv 0 bytes: c44
+Error: Receive fail: Bad file descriptor
+Thread return : (null)
+
+$ ./client-thread 
+c5
+Recv 100 bytes: c5
+c55
+Recv 100 bytes: c55
+\q
+Log: Output close
+Recv 0 bytes: c55
+Thread return : (null)
+Error: Receive fail: Bad file descriptor
+
+$ ./client-thread 
+c6
+Recv 100 bytes: c6
+c66
+Recv 100 bytes: c66
+\q
+Log: Output close
+Recv 0 bytes: c66
+Error: Receive fail: Bad file descriptor
+Thread return : (null)
 ```
 </details>
