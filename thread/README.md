@@ -110,57 +110,47 @@ The num : 0
 <details>
 <summary>点击查看 多线程回声服务端与普通客户端运行案例 </summary>
 
-演示结果表明，支持多个客户端同时在线，互不影响。同时由于客户端不断的断开连接、建立连接，其套接字在服务端程序里会不断变化，但不影响回声程序，谁发来就拍回去  
+演示结果表明，支持多个客户端同时在线，互不影响。但是很奇怪的是不是每次客户端掉线都会提示说客户掉线了  
 ```bash
 $ make cs
 
 $ ./server-thread 
 Waiting for connecting
-New client：4 , IP 127.0.0.1 , Port 34814
-New client：5 , IP 127.0.0.1 , Port 34816
-New client：6 , IP 127.0.0.1 , Port 34818
+New client：4 , IP 127.0.0.1 , Port 35200
+New client：5 , IP 127.0.0.1 , Port 35202
+New client：6 , IP 127.0.0.1 , Port 35204
 4 : c4
-Client 4 disconnect
-New client：7 , IP 127.0.0.1 , Port 34822
 5 : c5
-New client：4 , IP 127.0.0.1 , Port 34824
 6 : c6
-Client 6 disconnect
-New client：5 , IP 127.0.0.1 , Port 34826
-5 : c66
-Client 5 disconnect
-New client：6 , IP 127.0.0.1 , Port 34828
-4 : c55
-Client 4 disconnect
-New client：5 , IP 127.0.0.1 , Port 34830
-7 : c44
-New client：4 , IP 127.0.0.1 , Port 34832
+6 : c66
+5 : c55
+4 : c44
 Client 4 disconnect
 
 # 下面是三个并行的客户端
 $ ./client 
 Input: c4
-Recv 1025 bytes: c4 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c4. From IP 127.0.0.1 , Port 8080
 Input: c44
-Recv 1025 bytes: c44 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c44. From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
 
 $ ./client 
 Input: c5
-Recv 1025 bytes: c5 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c5. From IP 127.0.0.1 , Port 8080
 Input: c55
-Recv 1025 bytes: c55 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c55. From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
 
 $ ./client 
 Input: c6
-Recv 1025 bytes: c6 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c6. From IP 127.0.0.1 , Port 8080
 Input: c66
-Recv 1025 bytes: c66 from IP 127.0.0.1 , Port 8080
+Recv 1025 bytes: c66. From IP 127.0.0.1 , Port 8080
 Input: \q
 Log: Output close
 Client close
