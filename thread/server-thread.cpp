@@ -3,7 +3,6 @@
 #include <netdb.h>
 #include <pthread.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 #define BUF_SIZE 1025      // 缓冲区大小 = BUF_SIZE - 1
