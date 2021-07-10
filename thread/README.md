@@ -26,10 +26,16 @@ g++ mythread.cpp -o mthread -lpthread
 
 - pthread_join  
   `int pthread_join (pthread_t __th, void **__thread_return)`  
-  定义在 <pthread.h> 中，作用是让使用此函数的主体阻塞等待线程，成功是返回 0，失败是返回其它值   
+  定义在 <pthread.h> 中，作用是让使用此函数的主体阻塞等待线程，成功时返回 0，失败时返回其它值 
   `__th` 终止  
   __th：线程 ID 
   __thread_return：存储线程返回值的变量的地址，NULL 代表无返回值    
+
+
+- pthread_detach  
+  `int pthread_detach (pthread_t __th)`  
+  定义在 <pthread.h> 中，作用是引导线程 `__th` 结束的时候立即销毁，成功时返回 0，失败时返回其它值   
+  使用这个函数销毁进程不会引起阻塞，需要注意的时候，对线程 A 用了这个方法就不能再对 A 线程用 pthread_join 方法  
 
 ## 线程安全
 多个线程同时执行临界区代码的时候，可能会引起问题。而线程安全函数被多个线程同时调用也不会引发问题，而非线程安全函数被同时调用时会引发问题。大部分标准函数都是线程安全函数，但有些就不是了，比如 gethostbyname,而提供同一功能的函数 gethostbyname_r 参数又不尽相同，要么改代码，要么声明头文件前定义 _REENTRANT 宏，当然也可以在编译代码的时候加上这个选项 -D_REENTRANT  
@@ -92,5 +98,71 @@ $ make
 $ ./2thread-mutex 
 The num : 0
 The num : 0
+```
+</details>
+
+## 回声服务程序
+- [server-thread.cpp](server-thread.cpp)：多线程回声服务端  
+- [client.cpp](client.cpp):普通回声客户端  
+
+在之前的程序中，为了支持同时服务多个客户，用了各种办法保持套接字，集中管理，如 select 中的 fd_set。这里用 clnt_socks[CLIENTMAX] 保存客户端的全部套接字，用 clnt_cnt 保持在线客户数，这两个就是临界资源，在对临界资源进行操作的时候需要加锁、解锁。
+
+<details>
+<summary>点击查看 多线程回声服务端与普通客户端运行案例 </summary>
+
+演示结果表明，支持多个客户端同时在线，互不影响。同时由于客户端不断的断开连接、建立连接，其套接字在服务端程序里会不断变化，但不影响回声程序，谁发来就拍回去  
+```bash
+$ make cs
+
+$ ./server-thread 
+Waiting for connecting
+New client：4 , IP 127.0.0.1 , Port 34814
+New client：5 , IP 127.0.0.1 , Port 34816
+New client：6 , IP 127.0.0.1 , Port 34818
+4 : c4
+Client 4 disconnect
+New client：7 , IP 127.0.0.1 , Port 34822
+5 : c5
+New client：4 , IP 127.0.0.1 , Port 34824
+6 : c6
+Client 6 disconnect
+New client：5 , IP 127.0.0.1 , Port 34826
+5 : c66
+Client 5 disconnect
+New client：6 , IP 127.0.0.1 , Port 34828
+4 : c55
+Client 4 disconnect
+New client：5 , IP 127.0.0.1 , Port 34830
+7 : c44
+New client：4 , IP 127.0.0.1 , Port 34832
+Client 4 disconnect
+
+# 下面是三个并行的客户端
+$ ./client 
+Input: c4
+Recv 1025 bytes: c4 from IP 127.0.0.1 , Port 8080
+Input: c44
+Recv 1025 bytes: c44 from IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+$ ./client 
+Input: c5
+Recv 1025 bytes: c5 from IP 127.0.0.1 , Port 8080
+Input: c55
+Recv 1025 bytes: c55 from IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
+
+$ ./client 
+Input: c6
+Recv 1025 bytes: c6 from IP 127.0.0.1 , Port 8080
+Input: c66
+Recv 1025 bytes: c66 from IP 127.0.0.1 , Port 8080
+Input: \q
+Log: Output close
+Client close
 ```
 </details>
