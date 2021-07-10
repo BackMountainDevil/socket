@@ -54,7 +54,7 @@ int main() {
       printf("Log: Output close\n");
       read(sock, bufRecv, sizeof(bufRecv));
       break;
-    } else if (write(sock, bufSend, sizeof(bufSend)) < 0) { // 发送数据
+    } else if (write(sock, bufSend, sizeof(bufSend)) == -1) { // 发送数据
       perror("Error: Send fail\n");
       close(sock);
       exit(EXIT_FAILURE);
@@ -62,7 +62,7 @@ int main() {
 
     // 读取服务器传回的数据
     int recv_num = read(sock, bufRecv, sizeof(bufRecv));
-    if (recv_num < 0) {
+    if (recv_num == -1) {
       perror("Error: Receive fail");
       close(sock);
       exit(EXIT_FAILURE);
