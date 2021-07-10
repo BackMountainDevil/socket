@@ -41,3 +41,56 @@ g++ -D_REENTRANT mythread.cpp -o mthread -lpthread
 多个线程同时对一个数据进行修改的时候可能会出错，这个很好理解：有个数 N=100，线程 A 把这个数减一，线程 B 把这个数加一，理想情况下 N 依然是 100，但是由于线程读取和修改 N 的时间不确定，也就是说，A 算出来 99，但是还没有修改 N，此时 B 对 N 操作，N 就变成了101，然后 A 再把结果写回 N，最后 N 变成了 99。
 
 这个问题在计组、数据库都会存在，解决的办法也不少，本质上都是锁机制（互斥量、信号量），说人话就是这个东西我在用（上锁），其它人用不了，除非我用完了（解锁）
+
+### 互斥量
+- [2thread-mutex](2thread-mutex.cpp): 临界区问题演示与互斥量解决办法  
+
+<details>
+<summary>点击查看 函数解释 </summary>
+
+- pthread_mutex_init  
+  `int pthread_mutex_init (pthread_mutex_t *__mutex,			       const pthread_mutexattr_t *__mutexattr)`  
+  定义在 <pthread.h> 中，作用是建立互斥量保存到 __mutex 中。成功时返回 0  
+  __mutex：保存互斥量的变量的地址，为此需要先建立一个互斥量 `pthread_mutex_t mutex；`  
+  __mutexattr：互斥量属性，没有特别需要就填 NULL
+
+- pthread_mutex_destroy  
+  `int pthread_mutex_destroy (pthread_mutex_t *__mutex)`  
+  定义在 <pthread.h> 中，作用是销毁 __mutex 中的互斥量。成功时返回 0  
+
+- pthread_mutex_lock  
+  `int pthread_mutex_lock (pthread_mutex_t *__mutex)`  
+  定义在 <pthread.h> 中，作用给互斥量加锁，如果已经被加锁，则会等待对方解锁。成功时返回 0  
+  加锁用完之后一定要记得解锁，不然当别的线程再次加锁就会发生死锁现象，大家都在阻塞等待解锁  
+
+- pthread_mutex_unlock  
+  `int pthread_mutex_unlock (pthread_mutex_t *__mutex)`  
+  定义在 <pthread.h> 中，作用给互斥量解锁。成功时返回 0    
+</details>
+
+<details>
+<summary>点击查看 运行案例 </summary>
+
+加 5000 是为了使结果明显，改大更明显。代码中的临界区是 `num += 1;` 和 `num -= 1;`，代码中不是在临界区两边加锁、解锁 而是在 for 循环外面这么做，是因为可以减少加锁、解锁的次数。
+
+```bash
+# 编译
+$ make
+
+# 对临界资源不加以控制的情况，结果不稳定、很大可能不正确
+$ ./2thread-mutex 
+The num : 0
+The num : 1921
+
+$ ./2thread-mutex 
+The num : 0
+The num : -5162
+
+# 取消代码中的代码注释（第 8、14、18、24、28、37、65 行），再次编译，结果正确
+$ make
+
+$ ./2thread-mutex 
+The num : 0
+The num : 0
+```
+</details>
