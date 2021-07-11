@@ -24,17 +24,7 @@ void *send_msg_all(char *msg, int len) {
     num = write(clnt_socks[j], msg, len);
     if (num < 0) {
       perror("Error: Send fail");
-      for (int i = 0; i < clnt_cnt; i++) { // 剔除掉线用户
-        if (clnt_socks[i] == clnt_socks[j]) {
-          while (i++ < clnt_cnt - 1) {
-            clnt_socks[i] = clnt_socks[i + 1];
-          }
-          std::cout << "Client " << clnt_socks[j] << " disconnect" << std::endl;
-          break;
-        }
-      }
-      clnt_cnt--; // 客户数量减一
-      close(clnt_socks[j]);
+      return NULL;
     }
   }
   pthread_mutex_unlock(&mutex); // 解锁
