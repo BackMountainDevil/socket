@@ -17,7 +17,7 @@ int clnt_socks[CLIENTMAX]; // 保存客户套接字的数组，临界资源
 /* 多进程群聊服务端 */
 
 // 把消息发送给所有客户
-void *send_msg_all(int fd, char *msg, int len) {
+void *send_msg_all(char *msg, int len) {
   int num;
   pthread_mutex_lock(&mutex); // 加锁
   for (int j = 0; j < clnt_cnt; j++) {
@@ -48,7 +48,7 @@ void *handle_client(void *arg) {
   int recv_num = 0;
   while ((recv_num = read(clnt_sock, bufSend, sizeof(bufSend))) != 0) {
     std::cout << clnt_sock << " : " << bufSend << std::endl;
-    send_msg_all(clnt_sock, bufSend, recv_num);
+    send_msg_all(bufSend, recv_num);
   }
 
   pthread_mutex_lock(&mutex);          // 加锁
@@ -81,9 +81,6 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  struct sockaddr_in serv_addr;
-  memset(&serv_addr, 0, sizeof(serv_addr)); // 每个字节都用0填充
-
   int opt = 1;
   if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
                  sizeof(opt))) {
@@ -92,7 +89,9 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  serv_addr.sin_family = AF_INET; // 使用IPv4地址
+  struct sockaddr_in serv_addr;
+  memset(&serv_addr, 0, sizeof(serv_addr)); // 每个字节都用0填充
+  serv_addr.sin_family = AF_INET;           // 使用IPv4地址
   serv_addr.sin_addr.s_addr =
       inet_addr(inet_ntoa(*(struct in_addr *)host->h_addr_list[0])); // IP地址
   serv_addr.sin_port = htons(PORT);                                  // 端口
