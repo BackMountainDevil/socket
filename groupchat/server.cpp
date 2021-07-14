@@ -44,14 +44,15 @@ void *handle_client(void *arg) {
   pthread_mutex_lock(&mutex);          // 加锁
   for (int i = 0; i < clnt_cnt; i++) { // 剔除掉线用户
     if (clnt_socks[i] == clnt_sock) {
-      while (i++ < clnt_cnt - 1) {
+      clnt_cnt--; // 客户数量减一
+      while (i < clnt_cnt) {
         clnt_socks[i] = clnt_socks[i + 1];
+        i++;
       }
       std::cout << "Client " << clnt_sock << " disconnect" << std::endl;
       break;
     }
   }
-  clnt_cnt--;                   // 客户数量减一
   pthread_mutex_unlock(&mutex); // 解锁
   close(clnt_sock);
   return NULL;
