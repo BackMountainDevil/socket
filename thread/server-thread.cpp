@@ -135,7 +135,7 @@ int main() {
                 << ntohs(clnt_addr.sin_port) << std::endl;
     }
   }
-
+  pthread_mutex_destroy(&mutex); // 销毁互斥量
   close(serv_sock);
   puts("Server close");
   return 0;
